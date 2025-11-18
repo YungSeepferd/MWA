@@ -9,7 +9,6 @@ setting when a ``.env`` file is present (loaded automatically via ``python-doten
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 from typing import List, Literal, Optional
 
@@ -36,8 +35,13 @@ class SearchCriteria(BaseModel):
 
 
 class Notification(BaseModel):
-    provider: Literal["telegram"] = Field(
-        "telegram", description="Notification provider – currently only telegram is supported"
+    provider: Literal["discord", "telegram"] = Field(
+        "discord",
+        description="Notification provider – discord (webhook) is preferred; telegram is deprecated",
+    )
+    discord_webhook_url: Optional[str] = Field(
+        None,
+        description="Discord webhook URL (required when provider == 'discord')",
     )
     telegram_bot_token: Optional[str] = Field(
         None, description="Telegram Bot token (required when provider == 'telegram')"
@@ -45,6 +49,12 @@ class Notification(BaseModel):
     telegram_chat_id: Optional[str] = Field(
         None, description="Telegram chat ID to send alerts to"
     )
+
+    @validator("discord_webhook_url", always=True)
+    def require_discord_url(cls, v, values, field):
+        if values.get("provider") == "discord" and not v:
+            raise ValueError("discord_webhook_url is required when provider == 'discord'")
+        return v
 
     @validator("telegram_bot_token", "telegram_chat_id", always=True)
     def require_telegram_fields(cls, v, values, field):
@@ -63,6 +73,12 @@ class Settings(BaseSettings):
     personal_profile: PersonalProfile
     search_criteria: SearchCriteria
     notification: Notification
+
+    # Ordered list of scraper providers to execute.
+    scrapers: List[Literal["immoscout", "wg_gesucht"]] = Field(
+        default_factory=lambda: ["immoscout", "wg_gesucht"],
+        description="Ordered list of scraper providers to execute",
+    )
 
     # Path to the JSON configuration file – can be overridden via env var CONFIG_PATH
     config_path: Path = Field(

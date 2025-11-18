@@ -11,10 +11,11 @@ import sys
 from pathlib import Path
 
 from loguru import logger
+from typing import List
 
 from mafa.config.settings import Settings
-from mafa.crawler.immoscout import scrape_immobilienscout24
-from mafa.crawler.wg_gesucht import scrape_wg_gesucht
+from mafa.providers import build_providers
+from mafa.notifier.discord import DiscordNotifier
 from mafa.db.manager import ListingRepository
 # The original implementation sent notifications via Telegram.
 # For the simplified version we generate a local CSV report instead,
@@ -79,14 +80,21 @@ def run(config_path: Path | None = None) -> None:
     # Initialise the SQLite repository.
     repo = ListingRepository()
 
-    # Run both scrapers.
-    immo_listings = scrape_immobilienscout24()
-    wg_listings = scrape_wg_gesucht()
-    all_listings = immo_listings + wg_listings
+    # Build provider instances based on config and run them.
+    providers = build_providers(settings.scrapers)
+    all_listings: List[dict] = []
+    for provider in providers:
+        all_listings.extend(provider.scrape())
 
     # Persist new listings, skipping duplicates.
     new_count = repo.bulk_add(all_listings)
     logger.info(f"Persisted {new_count} new listings (out of {len(all_listings)} total).")
+    # Initialise notifier (Discord) – will be used after CSV generation.
+    try:
+        notifier = DiscordNotifier(settings)
+    except Exception as e:
+        logger.error(f"Failed to initialise Discord notifier: {e}")
+        notifier = None
 
     # Filter listings according to the user's search criteria.
     matching = _filter_listings(all_listings, settings.search_criteria)
@@ -111,5 +119,11 @@ def run(config_path: Path | None = None) -> None:
             logger.info(f"Generated CSV report with {len(matching)} listings at {report_path}")
         except Exception as e:
             logger.error(f"Failed to write CSV report: {e}")
+        # After generating the CSV (or if there are no matches), send Discord notifications if possible.
+        if matching and notifier:
+            try:
+                notifier.send_listings(matching)
+            except Exception as e:
+                logger.error(f"Failed to send Discord notification: {e}")
     else:
         logger.info("No new listings matched the search criteria.")
