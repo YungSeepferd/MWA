@@ -1,0 +1,13 @@
+{
+  "personal_profile": {
+    "my_full_name": "John Doe",
+    "email": "john@example.com"
+  },
+  "search_criteria": {
+    "zip_codes": [80331, 80333],
+    "max_price": 950
+  },
+  "notification": {
+    "provider": "telegram"
+  }
+}
