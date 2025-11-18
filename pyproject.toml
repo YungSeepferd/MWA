@@ -1,6 +1,7 @@
 [project]
 name = "mwa-munchewohnungsassistent"
 version = "0.1.0"
+packages = [{include = "mafa"}]
 description = "Munich Apartment Finder Assistant (MAFA) – a Python tool for scraping listings and notifying users."
 authors = [
     {name = "Vincent Göke",email = "goeke.vincent@gmail.de"}
@@ -14,6 +15,10 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "loguru>=0.7.0",
     "httpx>=0.27.0",
+    "apscheduler>=3.10.0",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "jinja2>=3.1.0",
     "streamlit>=1.30.0"
 ]
 

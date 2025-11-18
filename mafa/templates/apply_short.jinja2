@@ -1,0 +1,17 @@
+**Anfrage für Wohnung**
+
+Sehr geehrte Damen und Herren,
+
+hiermit möchte ich mich für die Wohnung "{{ listing.title }}" bewerben.
+
+**Meine Daten:**
+- Name: {{ settings.personal_profile.my_full_name }}
+- Beruf: {{ settings.personal_profile.my_profession }}
+- Arbeitgeber: {{ settings.personal_profile.my_employer }}
+- Nettoeinkommen: {{ settings.personal_profile.net_household_income_monthly }} €
+
+**Mein Profil:**
+{{ settings.personal_profile.intro_paragraph }}
+
+Mit freundlichen Grüßen
+{{ settings.personal_profile.my_full_name }}

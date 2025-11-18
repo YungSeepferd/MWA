@@ -1,21 +1,247 @@
-🏠 Munich Apartment Finder Assistant (MAFA)
+# Munich Apartment Finder Assistant (MAFA)
 
-MAFA is a personal C2B (Consumer-to-Business) search agent designed to give you a critical speed advantage in the highly competitive Munich rental market. It aggregates listings from major portals and hidden management company websites, alerts you instantly, and facilitates rapid, high-quality email applications.
+![CI](https://github.com/your-org/mafa/workflows/CI/badge.svg)
 
-🚀 Key Features
+MAFA is a Python-based real estate scraping and notification system designed for the Munich rental market. It aggregates listings from multiple portals, stores them in a SQLite database, and sends templated application messages via Discord webhooks.
 
-Full Market Coverage: Aggregates listings from both major portals and individual Hausverwaltung (Property Management) websites.
+## ✨ Features
 
-Instant Alerting: Uses Telegram to notify you instantly when a new, matching listing is found.
+- **Modular Provider Architecture** - Extensible scrapers for ImmoScout24, WG-Gesucht, and other real estate portals
+- **Discord Notifications** - Send personalized application messages via Discord webhooks
+- **SQLite Database** - Persistent storage with deduplication
+- **Scheduled Runs** - APScheduler integration for periodic scraping
+- **FastAPI Dashboard** - Web interface for manual runs and listing management
+- **Jinja2 Templates** - Customizable application message templates
+- **Docker Support** - Complete containerization with Docker Compose
+- **Comprehensive Testing** - Unit tests with mocked Selenium
 
-C2B Application Draft: Generates a professional, personalized German email application in seconds, ready to copy and send.
+## 🚀 Quick Start
 
-⚙️ Initial Setup
+### Prerequisites
 
-Clone this repository.
+- Python 3.10+ 
+- Docker (optional, for containerized deployment)
+- Discord webhook URL (for notifications)
 
-Install dependencies (e.g., pip install -r requirements.txt - dependencies list to be created later).
+### Installation
 
-Configure: Copy config.example.json to config.json and fill out your personal profile and search criteria. This file is essential for filtering and generating your application emails.
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd mafa-munchewohnungsassistent
+   ```
 
-Run: Execute the main script to start monitoring: python run.py
+2. **Install Poetry dependencies**
+   ```bash
+   poetry install
+   ```
+
+3. **Configure the application**
+   ```bash
+   cp config.example.json config.json
+   # Edit config.json with your settings
+   ```
+
+4. **Run the application**
+   ```bash
+   # Manual run
+   poetry run python run.py
+
+   # Start the dashboard
+   poetry run uvicorn api.main:app --reload
+   ```
+
+### Docker Deployment
+
+1. **Build and start services**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Access the dashboard**
+   - Open http://localhost:8000 in your browser
+
+## ⚙️ Configuration
+
+### config.json Structure
+
+```json
+{
+  "personal_profile": {
+    "my_full_name": "Max Mustermann",
+    "my_profession": "Software Engineer", 
+    "my_employer": "Tech Corp",
+    "net_household_income_monthly": 4500,
+    "total_occupants": 2,
+    "intro_paragraph": "I am a reliable tenant..."
+  },
+  "search_criteria": {
+    "max_price": 1500,
+    "min_rooms": 2,
+    "zip_codes": ["80331", "80333", "80335"]
+  },
+  "notification": {
+    "provider": "discord",
+    "discord_webhook_url": "https://discord.com/api/webhooks/..."
+  },
+  "scrapers": ["immoscout", "wg_gesucht"]
+}
+```
+
+### Environment Variables
+
+- `CONFIG_PATH` - Path to configuration file (default: config.json)
+- `PYTHONPATH` - Python path for imports
+- `DISCORD_WEBHOOK_URL` - Discord webhook URL (overrides config)
+
+## 📁 Project Structure
+
+```
+mafa/
+├── config/
+│   ├── settings.py          # Pydantic settings model
+│   └── __init__.py
+├── crawler/                 # Legacy crawler modules (deprecated)
+├── db/
+│   ├── manager.py           # SQLite repository
+│   └── __init__.py
+├── notifier/
+│   ├── discord.py           # Discord webhook notifier
+│   └── telegram.py          # Legacy Telegram notifier
+├── orchestrator/
+│   ├── __init__.py          # Main orchestration logic
+├── providers/
+│   ├── base.py              # Provider protocol
+│   ├── immoscout.py         # ImmoScout24 provider
+│   ├── wg_gesucht.py        # WG-Gesucht provider
+│   └── __init__.py          # Provider registry
+├── scheduler/
+│   ├── scheduler.py         # APScheduler integration
+│   └── __init__.py
+├── templates/
+│   ├── apply_short.jinja2   # Short application template
+│   ├── apply_detailed.jinja2 # Detailed application template
+│   └── __init__.py          # Jinja2 environment
+├── dashboard/               # Legacy dashboard (deprecated)
+└── driver.py                # Selenium driver wrapper
+
+api/
+└── main.py                  # FastAPI dashboard
+
+tests/
+├── test_providers.py        # Provider tests
+└── test_db_manager.py       # Database tests
+
+Dockerfile                   # Container definition
+docker-compose.yml           # Service orchestration
+.github/workflows/ci.yml     # GitHub Actions CI
+```
+
+## 🛠️ Development
+
+### Running Tests
+
+```bash
+poetry run pytest tests/ -v
+```
+
+### Code Quality
+
+```bash
+poetry run black .
+poetry run isort .
+poetry run flake8 .
+```
+
+### Adding New Providers
+
+1. **Create provider class**
+   ```python
+   from mafa.providers.base import BaseProvider
+   
+   class MyProvider(BaseProvider):
+       def scrape(self) -> List[Dict]:
+           # Implementation here
+           pass
+   ```
+
+2. **Register provider**
+   ```python
+   # In mafa/providers/__init__.py
+   PROVIDER_REGISTRY["my_provider"] = MyProvider
+   ```
+
+3. **Add to config**
+   ```json
+   {
+     "scrapers": ["immoscout", "my_provider"]
+   }
+   ```
+
+## 📊 Scheduler
+
+The scheduler uses APScheduler to run scraper jobs:
+
+- **Periodic Jobs** - Runs every 30 minutes by default
+- **Manual Jobs** - Triggered via FastAPI dashboard
+- **Configuration** - Modify `mafa/scheduler/scheduler.py` for custom schedules
+
+## 📧 Templates
+
+Customize application messages using Jinja2 templates:
+
+- **Variables Available**: `listing`, `settings.personal_profile.*`
+- **Default Templates**: 
+  - `apply_short.jinja2` - Concise application
+  - `apply_detailed.jinja2` - Detailed application
+
+## 🐳 Docker Services
+
+### mafa-app
+- FastAPI dashboard on port 8000
+- Interactive web interface
+
+### mafa-scheduler
+- Background scheduler service
+- Periodic scraping runs
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make changes and add tests
+4. Ensure CI passes (`poetry run pytest`)
+5. Commit changes (`git commit -m 'Add amazing feature'`)
+6. Push to branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Selenium WebDriver Issues**
+- Ensure Chrome is installed in Docker image
+- Check webdriver-manager configuration
+
+**Database Lock Errors**
+- Run only one instance of the application
+- Check for proper connection handling
+
+**Discord Webhook Failures**
+- Verify webhook URL is correct
+- Check Discord server permissions
+
+## 📞 Support
+
+For support and questions:
+- Open an issue on GitHub
+- Check existing issues for solutions
+- Review the documentation in this README
+
+---
+
+**Note**: This project is designed for educational purposes and personal use. Please respect the terms of service of the real estate websites you scrape and use rate limiting appropriately.

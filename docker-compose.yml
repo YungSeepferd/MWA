@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mafa-app:
+    build: .
+    container_name: mafa-app
+    ports:
+      - "8000:8000"
+    environment:
+      - CONFIG_PATH=config.json
+      - PYTHONPATH=/app
+    volumes:
+      - ./data:/app/data
+      - ./config.json:/app/config.json
+      - ./config.example.json:/app/config.example.json
+    networks:
+      - mafa-network
+
+  mafa-scheduler:
+    build: .
+    container_name: mafa-scheduler
+    environment:
+      - CONFIG_PATH=config.json
+      - PYTHONPATH=/app
+    volumes:
+      - ./data:/app/data
+      - ./config.json:/app/config.json
+      - ./config.example.json:/app/config.example.json
+    command: ["poetry", "run", "python", "-m", "mafa.scheduler.scheduler"]
+    networks:
+      - mafa-network
+    depends_on:
+      - mafa-app
+
+networks:
+  mafa-network:
+    driver: bridge
