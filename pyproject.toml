@@ -1,0 +1,23 @@
+[project]
+name = "mwa-munchewohnungsassistent"
+version = "0.1.0"
+description = "Munich Apartment Finder Assistant (MAFA) – a Python tool for scraping listings and notifying users."
+authors = [
+    {name = "Vincent Göke",email = "goeke.vincent@gmail.de"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "selenium>=4.20,<5",
+    "webdriver-manager>=4.0.0",
+    "pydantic>=2.0,<3",
+    "python-dotenv>=1.0.0",
+    "loguru>=0.7.0",
+    "python-telegram-bot>=21.0",
+    "streamlit>=1.30.0"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
