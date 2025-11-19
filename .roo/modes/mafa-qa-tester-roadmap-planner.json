@@ -1,0 +1,133 @@
+{
+  "name": "MAFA QA Tester & Roadmap Planner",
+  "slug": "mafa-qa-tester-roadmap-planner",
+  "description": "Specialized mode for Munich Apartment Finder Assistant (MAFA) - provides comprehensive QA analysis, systematic bug discovery, architectural consistency checks, and structured roadmap planning across all project phases.",
+  "model": "minimax-m2:cloud",
+  "system_prompt": "system-prompt-mafa-qa-tester.md",
+  "file_permissions": {
+    "allow_read": [
+      "**/*.py",
+      "**/*.md",
+      "**/*.json",
+      "**/*.yml",
+      "**/*.yaml",
+      "**/*.toml",
+      "**/*.txt",
+      "**/*.rst"
+    ],
+    "allow_write": [
+      "mafa/**/*.py",
+      "tests/**/*.py",
+      "api/**/*.py",
+      "scripts/**/*.py",
+      "scripts/**/*.sh",
+      ".github/workflows/*.yml",
+      "docs/**/*.md",
+      "*.json",
+      "*.md",
+      "*.toml"
+    ],
+    "allow_execute": [
+      "scripts/**/*.sh",
+      "scripts/**/*.py",
+      "run.py"
+    ],
+    "readonly": [
+      "*.env",
+      "*.secrets",
+      ".env*",
+      "config.json",
+      "poetry.lock",
+      "**/secrets/**",
+      "**/.secrets/**",
+      "**/*secret*"
+    ],
+    "dangerous": [
+      "rm -rf",
+      "sudo",
+      "docker system prune",
+      "git push --force",
+      "**/delete**"
+    ]
+  },
+  "commands": [
+    {
+      "name": "run-dev",
+      "description": "Start development environment with hot-reload",
+      "script": "scripts/run-dev.sh",
+      "usage": "/run-dev [port]",
+      "parameters": {
+        "port": {
+          "type": "integer",
+          "description": "Port for development server (default: 8000)",
+          "default": 8000
+        }
+      }
+    },
+    {
+      "name": "run-tests",
+      "description": "Run comprehensive test suite with coverage",
+      "script": "scripts/run-tests.sh",
+      "usage": "/run-tests [pattern]",
+      "parameters": {
+        "pattern": {
+          "type": "string",
+          "description": "Test pattern to filter specific tests",
+          "default": ""
+        }
+      }
+    },
+    {
+      "name": "run-scraper",
+      "description": "Trigger scraper in dry-run mode for testing",
+      "script": "scripts/run-scraper-dryrun.sh",
+      "usage": "/run-scraper [provider]",
+      "parameters": {
+        "provider": {
+          "type": "string",
+          "description": "Specific provider to test (immoscout, wg_gesucht)",
+          "default": "all"
+        }
+      }
+    },
+    {
+      "name": "analyze-code",
+      "description": "Perform comprehensive code analysis and generate report",
+      "script": "scripts/analyze-code.sh",
+      "usage": "/analyze-code [scope]",
+      "parameters": {
+        "scope": {
+          "type": "string",
+          "description": "Analysis scope (full, security, performance, architecture)",
+          "default": "full"
+        }
+      }
+    },
+    {
+      "name": "generate-roadmap",
+      "description": "Generate structured roadmap for next development phase",
+      "script": "scripts/generate-roadmap.sh",
+      "usage": "/generate-roadmap [phase]",
+      "parameters": {
+        "phase": {
+          "type": "string",
+          "description": "Target phase (current, next, future)",
+          "default": "next"
+        }
+      }
+    },
+    {
+      "name": "health-check",
+      "description": "Run system health checks and diagnostics",
+      "script": "scripts/health-check.sh",
+      "usage": "/health-check",
+      "parameters": {}
+    }
+  ],
+  "context": {
+    "project": "MAFA - Munich Apartment Finder Assistant",
+    "domain": "real-estate-scraping",
+    "tech_stack": ["python", "selenium", "fastapi", "sqlite", "discord", "docker"],
+    "version": "0.1.0"
+  }
+}

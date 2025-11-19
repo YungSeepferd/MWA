@@ -1,0 +1,61 @@
+{
+  "mcpServers": {
+    "mafa-health-monitor": {
+      "command": "python",
+      "args": ["./tools/mcp-shim/mafa-health-monitor.py"],
+      "env": {
+        "MAFA_CONFIG_PATH": "./config.json",
+        "MAFA_ENV": "development"
+      }
+    },
+    "mafa-code-analyzer": {
+      "command": "python", 
+      "args": ["./tools/mcp-shim/mafa-code-analyzer.py"],
+      "env": {
+        "MAFA_PROJECT_ROOT": "./mafa",
+        "MAFA_TESTS_ROOT": "./tests"
+      }
+    },
+    "context7-docs": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "env": {
+        "CONTEXT7_DOCS_API_TOKEN": "${CONTEXT7_DOCS_API_TOKEN}"
+      }
+    },
+    "github-integration": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i", "--rm",
+        "-e", "GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}",
+        "ghcr.io/github/github-mcp-server"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {}
+    }
+  },
+  "serverSettings": {
+    "mafa-health-monitor": {
+      "timeout": 30,
+      "retries": 3,
+      "requiredTools": ["health_check", "get_system_info"]
+    },
+    "mafa-code-analyzer": {
+      "timeout": 60,
+      "retries": 2,
+      "requiredTools": ["analyze_module", "find_issues", "suggest_improvements"]
+    }
+  },
+  "developmentConfig": {
+    "localShims": ["./tools/mcp-shim/"],
+    "stdinMode": true,
+    "logging": {
+      "level": "DEBUG",
+      "format": "json"
+    }
+  }
+}

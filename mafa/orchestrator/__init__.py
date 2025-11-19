@@ -94,7 +94,7 @@ def _validate_listing_data(listing: dict) -> bool:
     return all(field in listing and listing[field] for field in required_fields)
 
 
-def run(config_path: Path | None = None) -> None:
+def run(config_path: Path | None = None, dry_run: bool = False) -> None:
     """
     Entry point for the MAFA orchestrator.
 
@@ -103,9 +103,15 @@ def run(config_path: Path | None = None) -> None:
     config_path : Path | None
         Optional path to a custom ``config.json`` file. If omitted the default
         location ``config.json`` (or ``config.example.json`` as a fallback) is used.
+    dry_run : bool
+        If True, run in dry-run mode (no database persistence, no notifications).
     """
     start_time = time.time()
-    logger.info("Starting MAFA orchestrator run...")
+    run_mode = "DRY-RUN" if dry_run else "NORMAL"
+    logger.info(f"Starting MAFA orchestrator run ({run_mode})...")
+    
+    if dry_run:
+        logger.info("DRY-RUN MODE: No database persistence, no notifications will be performed")
     
     # Initialize monitoring
     metrics_collector = get_metrics_collector()
@@ -128,19 +134,23 @@ def run(config_path: Path | None = None) -> None:
             logger.error(f"Failed to load configuration: {e}")
             raise ConfigurationError(f"Configuration loading failed: {e}")
 
-        # Initialise the SQLite repository.
-        try:
-            repo = ListingRepository()
-            logger.info("Database repository initialized")
-            
-            # Optimize database performance
-            db_path = repo.db_path
-            PerformanceOptimizer.create_database_indexes(db_path)
-            PerformanceOptimizer.optimize_database(db_path)
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize database: {e}")
-            raise DatabaseError(f"Database initialization failed: {e}")
+        # Initialise the SQLite repository (skip in dry-run mode).
+        repo = None
+        if not dry_run:
+            try:
+                repo = ListingRepository()
+                logger.info("Database repository initialized")
+                
+                # Optimize database performance
+                db_path = repo.db_path
+                PerformanceOptimizer.create_database_indexes(db_path)
+                PerformanceOptimizer.optimize_database(db_path)
+                
+            except Exception as e:
+                logger.error(f"Failed to initialize database: {e}")
+                raise DatabaseError(f"Database initialization failed: {e}")
+        else:
+            logger.info("DRY-RUN: Skipping database initialization")
 
         # Build provider instances based on config and run them.
         all_listings: List[dict] = []
@@ -214,13 +224,17 @@ def run(config_path: Path | None = None) -> None:
             )
             return
 
-        # Persist new listings, skipping duplicates.
-        try:
-            new_count = repo.bulk_add(all_listings)
-            logger.info(f"Persisted {new_count} new listings (out of {len(all_listings)} total)")
-        except Exception as e:
-            logger.error(f"Failed to persist listings to database: {e}")
-            raise DatabaseError(f"Database persistence failed: {e}")
+        # Persist new listings, skipping duplicates (skip in dry-run mode).
+        new_count = 0
+        if not dry_run and repo:
+            try:
+                new_count = repo.bulk_add(all_listings)
+                logger.info(f"Persisted {new_count} new listings (out of {len(all_listings)} total)")
+            except Exception as e:
+                logger.error(f"Failed to persist listings to database: {e}")
+                raise DatabaseError(f"Database persistence failed: {e}")
+        else:
+            logger.info(f"DRY-RUN: Would persist {len(all_listings)} listings (skipping database persistence)")
 
         # Filter listings according to the user's search criteria.
         try:
@@ -230,23 +244,27 @@ def run(config_path: Path | None = None) -> None:
             logger.error(f"Failed to filter listings: {e}")
             raise ConfigurationError(f"Search criteria filtering failed: {e}")
 
-        # Initialize notifier (Discord) – will be used after CSV generation.
+        # Initialize notifier (Discord) – will be used after CSV generation (skip in dry-run mode).
         notifier = None
-        try:
-            notifier = DiscordNotifier(settings)
-            logger.info("Discord notifier initialized successfully")
-        except Exception as e:
-            logger.error(f"Failed to initialize Discord notifier: {e}")
-            # Continue without notifier - not a critical error
+        if not dry_run:
+            try:
+                notifier = DiscordNotifier(settings)
+                logger.info("Discord notifier initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize Discord notifier: {e}")
+                # Continue without notifier - not a critical error
+        else:
+            logger.info("DRY-RUN: Skipping notifier initialization")
 
-        # Generate a simple CSV report for the matching listings.
+        # Generate a simple CSV report for the matching listings (always generate, even in dry-run).
         if matching:
             import csv
             from datetime import datetime
             try:
                 data_dir = Path(__file__).resolve().parents[3] / "data"
                 data_dir.mkdir(exist_ok=True)
-                report_path = data_dir / f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+                report_suffix = "_dryrun" if dry_run else ""
+                report_path = data_dir / f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}{report_suffix}.csv"
                 
                 with open(report_path, mode="w", newline="", encoding="utf-8") as csvfile:
                     fieldnames = ["title", "price", "source", "timestamp"]
@@ -264,20 +282,22 @@ def run(config_path: Path | None = None) -> None:
                 logger.error(f"Failed to write CSV report: {e}")
                 # Continue execution even if CSV generation fails
             
-            # Send Discord notifications if possible.
-            if notifier:
+            # Send Discord notifications if possible (skip in dry-run mode).
+            if notifier and not dry_run:
                 try:
                     notifier.send_listings(matching)
                     logger.info(f"Sent Discord notification with {len(matching)} listings")
                 except Exception as e:
                     logger.error(f"Failed to send Discord notification: {e}")
                     # Don't raise - notification failure shouldn't crash the application
+            elif dry_run:
+                logger.info(f"DRY-RUN: Would send Discord notification with {len(matching)} listings (skipping)")
         else:
             logger.info("No new listings matched the search criteria")
         
         # Log summary
         duration = time.time() - start_time
-        logger.info(f"Orchestrator run completed successfully in {duration:.2f}s")
+        logger.info(f"Orchestrator run completed successfully in {duration:.2f}s ({run_mode})")
         
         # Update metrics with new listings count
         if all_listings:
@@ -288,6 +308,15 @@ def run(config_path: Path | None = None) -> None:
                 listings_found=len(all_listings),
                 new_listings=new_count
             )
+        
+        # Dry-run specific summary
+        if dry_run:
+            logger.info("DRY-RUN SUMMARY:")
+            logger.info(f"  - Listings scraped: {len(all_listings)}")
+            logger.info(f"  - Listings matching criteria: {len(matching) if matching else 0}")
+            logger.info(f"  - Database persistence: SKIPPED")
+            logger.info(f"  - Notifications: SKIPPED")
+            logger.info(f"  - CSV report: GENERATED")
         
     except (ConfigurationError, DatabaseError, ScrapingError) as e:
         logger.error(f"Application error: {e}")
