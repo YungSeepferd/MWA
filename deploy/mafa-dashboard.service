@@ -1,0 +1,27 @@
+[Unit]
+Description=MAFA Contact Review Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=mafa
+Group=mafa
+WorkingDirectory=/opt/mafa
+ExecStart=/usr/bin/python3 /opt/mafa/deploy/dashboard_server.py --host 0.0.0.0 --port 8080
+Restart=always
+RestartSec=10
+Environment=PYTHONPATH=/opt/mafa
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/mafa/data
+
+[Install]
+WantedBy=multi-user.target

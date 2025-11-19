@@ -6,14 +6,16 @@ MAFA is a Python-based real estate scraping and notification system designed for
 
 ## ✨ Features
 
+- **Advanced Contact Discovery** - Automated extraction of email addresses, phone numbers, and contact forms from property listings
 - **Modular Provider Architecture** - Extensible scrapers for ImmoScout24, WG-Gesucht, and other real estate portals
 - **Discord Notifications** - Send personalized application messages via Discord webhooks
-- **SQLite Database** - Persistent storage with deduplication
-- **Scheduled Runs** - APScheduler integration for periodic scraping
-- **FastAPI Dashboard** - Web interface for manual runs and listing management
+- **SQLite Database** - Persistent storage with deduplication and contact management
+- **Scheduled Runs** - APScheduler integration for periodic scraping and contact discovery
+- **FastAPI Dashboard** - Web interface for manual runs, listing management, and contact review
 - **Jinja2 Templates** - Customizable application message templates
 - **Docker Support** - Complete containerization with Docker Compose
-- **Comprehensive Testing** - Unit tests with mocked Selenium
+- **Comprehensive Testing** - 60%+ test coverage with detailed test suites
+- **Security & Monitoring** - Input validation, health checks, and performance metrics
 
 ## 🚀 Quick Start
 
@@ -61,6 +63,37 @@ MAFA is a Python-based real estate scraping and notification system designed for
 2. **Access the dashboard**
    - Open http://localhost:8000 in your browser
 
+## 🔍 Contact Discovery
+
+MAFA now includes advanced contact discovery capabilities that automatically extract contact information from property listings:
+
+### Contact Extraction Features
+- **Email Detection**: Pattern-based extraction with obfuscation handling (e.g., "user [at] domain [dot] com")
+- **Phone Number Recognition**: German and international phone format support
+- **Contact Form Discovery**: Automated detection of contact forms with field analysis
+- **Confidence Scoring**: Multi-level confidence assessment (High/Medium/Low)
+- **Contact Validation**: DNS/MX verification, syntax checking, and optional SMTP verification
+- **Deduplication**: Hash-based contact deduplication across sources
+
+### Contact Discovery Usage
+```python
+from mafa.contacts.extractor import ContactExtractor
+from mafa.contacts.validator import ContactValidator
+from mafa.contacts.storage import ContactStorage
+
+# Extract contacts from a listing
+extractor = ContactExtractor(config)
+contacts, forms = await extractor.discover_contacts("https://example-listing.com")
+
+# Validate contacts
+validator = ContactValidator()
+validated_contacts = await validator.validate_contacts(contacts)
+
+# Store contacts
+storage = ContactStorage(Path("data/contacts.db"))
+storage.store_contacts(validated_contacts)
+```
+
 ## ⚙️ Configuration
 
 ### config.json Structure
@@ -69,7 +102,7 @@ MAFA is a Python-based real estate scraping and notification system designed for
 {
   "personal_profile": {
     "my_full_name": "Max Mustermann",
-    "my_profession": "Software Engineer", 
+    "my_profession": "Software Engineer",
     "my_employer": "Tech Corp",
     "net_household_income_monthly": 4500,
     "total_occupants": 2,
@@ -84,7 +117,13 @@ MAFA is a Python-based real estate scraping and notification system designed for
     "provider": "discord",
     "discord_webhook_url": "https://discord.com/api/webhooks/..."
   },
-  "scrapers": ["immoscout", "wg_gesucht"]
+  "scrapers": ["immoscout", "wg_gesucht"],
+  "contact_discovery": {
+    "enabled": true,
+    "confidence_threshold": "medium",
+    "validation_enabled": true,
+    "rate_limit_seconds": 1.0
+  }
 }
 ```
 
@@ -100,6 +139,12 @@ MAFA is a Python-based real estate scraping and notification system designed for
 mafa/
 ├── config/
 │   ├── settings.py          # Pydantic settings model
+│   └── __init__.py
+├── contacts/                # Contact discovery system
+│   ├── extractor.py         # Contact extraction engine
+│   ├── models.py            # Contact data models
+│   ├── storage.py           # SQLite contact storage
+│   ├── validator.py         # Contact validation utilities
 │   └── __init__.py
 ├── crawler/                 # Legacy crawler modules (deprecated)
 ├── db/
@@ -123,18 +168,26 @@ mafa/
 │   ├── apply_detailed.jinja2 # Detailed application template
 │   └── __init__.py          # Jinja2 environment
 ├── dashboard/               # Legacy dashboard (deprecated)
+├── security.py              # Security validation utilities
+├── exceptions.py            # Custom exception hierarchy
+├── monitoring.py            # Health checks and metrics
 └── driver.py                # Selenium driver wrapper
 
 api/
 └── main.py                  # FastAPI dashboard
 
 tests/
+├── test_contacts.py         # Contact discovery tests (706 lines)
+├── test_configuration.py    # Configuration validation tests
+├── test_db_manager.py       # Database tests
+├── test_exceptions.py       # Exception handling tests
 ├── test_providers.py        # Provider tests
-└── test_db_manager.py       # Database tests
+└── test_security.py         # Security validation tests
 
 Dockerfile                   # Container definition
 docker-compose.yml           # Service orchestration
 .github/workflows/ci.yml     # GitHub Actions CI
+ROADMAP.md                   # Production deployment roadmap
 ```
 
 ## 🛠️ Development

@@ -1,0 +1,32 @@
+{
+  "contact_discovery": {
+    "enabled": true,
+    "confidence_threshold": "high",
+    "validation_enabled": true,
+    "rate_limit_seconds": 2.0,
+    "max_crawl_depth": 2,
+    "blocked_domains": [
+      "example.com",
+      "test.com",
+      "localhost",
+      "127.0.0.1"
+    ],
+    "preferred_contact_methods": [
+      "email",
+      "phone",
+      "form"
+    ]
+  },
+  "storage": {
+    "contact_retention_days": 180,
+    "auto_cleanup_enabled": true,
+    "backup_enabled": true
+  },
+  "monitoring": {
+    "alert_thresholds": {
+      "extraction_failure_rate": 0.3,
+      "validation_failure_rate": 0.5,
+      "slow_extraction_seconds": 60
+    }
+  }
+}
