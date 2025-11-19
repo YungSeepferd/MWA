@@ -1,0 +1,81 @@
+{
+  "scheduler": {
+    "enabled": true,
+    "timezone": "Europe/Berlin",
+    "jobs": [
+      {
+        "id": "immoscout_scraping",
+        "name": "ImmoScout Daily Scraping",
+        "function": "mwa_core.scheduler.job_definitions:scraping_job",
+        "trigger": "cron",
+        "cron_expression": "0 9 * * *",
+        "max_instances": 1,
+        "max_retries": 3,
+        "retry_delay_seconds": 300,
+        "kwargs": {
+          "provider": "immoscout"
+        }
+      },
+      {
+        "id": "wg_gesucht_scraping",
+        "name": "WG-Gesucht Daily Scraping",
+        "function": "mwa_core.scheduler.job_definitions:scraping_job",
+        "trigger": "cron",
+        "cron_expression": "0 10 * * *",
+        "max_instances": 1,
+        "max_retries": 3,
+        "retry_delay_seconds": 300,
+        "kwargs": {
+          "provider": "wg_gesucht"
+        }
+      },
+      {
+        "id": "contact_discovery",
+        "name": "Contact Discovery",
+        "function": "mwa_core.scheduler.job_definitions:contact_discovery_job",
+        "trigger": "interval",
+        "interval_hours": 6,
+        "max_instances": 1,
+        "max_retries": 2,
+        "retry_delay_seconds": 600
+      },
+      {
+        "id": "daily_cleanup",
+        "name": "Daily Cleanup",
+        "function": "mwa_core.scheduler.job_definitions:cleanup_job",
+        "trigger": "cron",
+        "cron_expression": "0 2 * * *",
+        "max_instances": 1,
+        "max_retries": 1,
+        "retry_delay_seconds": 3600
+      }
+    ],
+    "persistence": {
+      "enabled": true,
+      "database_url": "sqlite:///data/scheduler.db",
+      "table_prefix": "apscheduler_"
+    },
+    "resources": {
+      "max_concurrent_jobs": 10,
+      "max_cpu_percent": 80.0,
+      "max_memory_mb": 1024,
+      "job_timeout_seconds": 3600,
+      "resource_check_interval_seconds": 30
+    },
+    "monitoring": {
+      "enabled": true,
+      "metrics_retention_days": 30,
+      "health_check_interval_seconds": 60,
+      "alert_on_job_failure": true,
+      "alert_on_resource_limit": true
+    },
+    "thread_pool_size": 10,
+    "process_pool_size": 4,
+    "log_level": "INFO",
+    "log_job_execution": true,
+    "log_job_failures": true,
+    "default_max_retries": 3,
+    "default_retry_delay": 60,
+    "default_job_timeout": 3600
+  }
+}
