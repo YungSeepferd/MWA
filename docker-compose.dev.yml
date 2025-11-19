@@ -1,0 +1,195 @@
+version: '3.8'
+
+services:
+  mafa-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mafa-dev
+    ports:
+      - "8000:8000"
+      - "8080:8080"
+    environment:
+      - CONFIG_PATH=config.json
+      - PYTHONPATH=/app
+      - MAFA_ENV=development
+      - MAFA_LOG_LEVEL=DEBUG
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config.json:/app/config.json
+      - ./config.example.json:/app/config.example.json
+    networks:
+      - mafa-dev-network
+    depends_on:
+      - mafa-db
+      - mafa-redis
+    command: ["poetry", "run", "python", "run.py"]
+    restart: unless-stopped
+
+  mafa-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mafa-api
+    ports:
+      - "8001:8000"
+    environment:
+      - CONFIG_PATH=config.json
+      - PYTHONPATH=/app
+      - MAFA_ENV=development
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mafa-dev-network
+    depends_on:
+      - mafa-db
+      - mafa-redis
+    command: ["poetry", "run", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    restart: unless-stopped
+
+  mafa-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mafa-scheduler
+    environment:
+      - CONFIG_PATH=config.json
+      - PYTHONPATH=/app
+      - MAFA_ENV=development
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mafa-dev-network
+    depends_on:
+      - mafa-db
+      - mafa-redis
+    command: ["poetry", "run", "python", "-m", "mafa.scheduler.scheduler"]
+    restart: unless-stopped
+
+  mafa-db:
+    image: sqlite:latest
+    container_name: mafa-db
+    volumes:
+      - ./data:/data
+      - ./scripts:/scripts
+    networks:
+      - mafa-dev-network
+    command: ["tail", "-f", "/dev/null"]  # Keep container running
+
+  mafa-redis:
+    image: redis:7-alpine
+    container_name: mafa-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mafa-dev-network
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+
+  mafa-mcp-shim:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    container_name: mafa-mcp-shim
+    ports:
+      - "3000:3000"
+    environment:
+      - MAFA_CONFIG_PATH=/app/config.json
+      - MAFA_ENV=development
+    volumes:
+      - ./tools/mcp-shim:/app/tools/mcp-shim
+      - ./config.json:/app/config.json
+    networks:
+      - mafa-dev-network
+    command: ["python", "tools/mcp-shim/mafa-health-monitor.py"]
+    restart: unless-stopped
+
+  mafa-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mafa-dashboard
+    ports:
+      - "3001:3000"
+    environment:
+      - CONFIG_PATH=config.json
+      - PYTHONPATH=/app
+      - MAFA_ENV=development
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mafa-dev-network
+    depends_on:
+      - mafa-api
+    command: ["poetry", "run", "streamlit", "run", "dashboard/streamlit_app.py", "--server.port=3000", "--server.address=0.0.0.0"]
+    restart: unless-stopped
+
+  mafa-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mafa-tests
+    environment:
+      - PYTHONPATH=/app
+      - MAFA_ENV=test
+    volumes:
+      - .:/app
+      - ./test-results:/app/test-results
+    networks:
+      - mafa-dev-network
+    profiles:
+      - testing
+    command: ["poetry", "run", "pytest", "tests/", "-v", "--html=test-results/report.html", "--self-contained-html"]
+
+  mafa-lint:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mafa-lint
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app
+    networks:
+      - mafa-dev-network
+    profiles:
+      - linting
+    command: ["poetry", "run", "black", "--check", ".", "&&", "poetry", "run", "isort", "--check-only", ".", "&&", "poetry", "run", "flake8", "."]
+
+  mafa-health-check:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mafa-health-check
+    environment:
+      - PYTHONPATH=/app
+      - MAFA_ENV=development
+    volumes:
+      - .:/app
+      - ./health-checks:/app/health-checks
+    networks:
+      - mafa-dev-network
+    profiles:
+      - health
+    command: ["poetry", "run", "python", "scripts/health-check.sh", "full"]
+
+networks:
+  mafa-dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  redis_data:
+    driver: local

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MWA Core Dashboard - Real-time Monitoring</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/dashboard.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-home"></i> MWA Core Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contacts">
+                            <i class="fas fa-address-book"></i> Contacts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/api/docs" target="_blank">
+                            <i class="fas fa-code"></i> API Docs
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item me-3">
+                        <span class="navbar-text">
+                            <i class="fas fa-wifi"></i>
+                            <span id="websocket-status" class="badge bg-secondary">Disconnected</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health" target="_blank">
+                            <i class="fas fa-heartbeat"></i> Health
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="display-4">
+                            <i class="fas fa-tachometer-alt"></i> MWA Core Dashboard
+                        </h1>
+                        <p class="lead">Real-time monitoring and management of Munich Apartment Finder Assistant</p>
+                    </div>
+                    <div class="text-end">
+                        <button id="auto-refresh-toggle" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-pause"></i> Pause Auto-Refresh
+                        </button>
+                        <button id="manual-update-button" class="btn btn-outline-success">
+                            <i class="fas fa-sync-alt"></i> Manual Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title">Total Contacts</h6>
+                                <h2 class="mb-0" id="total-contacts">0</h2>
+                            </div>
+                            <i class="fas fa-address-book fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title">Approved</h6>
+                                <h2 class="mb-0" id="approved-contacts">0</h2>
+                            </div>
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title">Pending</h6>
+                                <h2 class="mb-0" id="pending-contacts">0</h2>
+                            </div>
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title">Rejected</h6>
+                                <h2 class="mb-0" id="rejected-contacts">0</h2>
+                            </div>
+                            <i class="fas fa-times-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Monitoring Row -->
+        <div class="row mb-4">
+            <!-- System Status -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-server"></i> System Status
+                        </h5>
+                        <span id="system-status" class="badge bg-secondary">Unknown</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>CPU Usage</h6>
+                                <div class="progress mb-3">
+                                    <div id="cpu-progress" class="progress-bar bg-success" style="width: 0%"></div>
+                                </div>
+                                <p class="text-muted">CPU: <span id="cpu-usage">0%</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Memory Usage</h6>
+                                <div class="progress mb-3">
+                                    <div id="memory-progress" class="progress-bar bg-success" style="width: 0%"></div>
+                                </div>
+                                <p class="text-muted">Memory: <span id="memory-usage">0%</span></p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1">Active Connections</p>
+                                <h6 id="active-connections">0</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1">Response Time</p>
+                                <h6 id="response-time">-</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scraper Status -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-spider"></i> Scraper Status
+                        </h5>
+                        <span id="scraper-status" class="badge bg-secondary">Unknown</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="current-scraper-job">
+                            <p class="text-muted">No active scraper jobs</p>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1">Last Run</p>
+                                <h6 id="last-scraper-run">-</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1">Items Processed</p>
+                                <h6 id="scraper-items-processed">0</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Controls -->
+        <div class="row">
+            <!-- Recent Contacts -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clock"></i> Recent Contacts
+                        </h5>
+                        <a href="/contacts" class="btn btn-sm btn-outline-primary">
+                            View All <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="recent-contacts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Method</th>
+                                        <th>Value</th>
+                                        <th>Confidence</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-contacts-body">
+                                    <!-- Populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="col-md-4">
+                <!-- Quick Actions -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt"></i> Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="/contacts" class="btn btn-primary">
+                                <i class="fas fa-address-book"></i> Review Contacts
+                            </a>
+                            <button class="btn btn-success" onclick="bulkApprove()">
+                                <i class="fas fa-check-circle"></i> Bulk Approve
+                            </button>
+                            <button class="btn btn-warning" onclick="bulkReview()">
+                                <i class="fas fa-eye"></i> Bulk Review
+                            </button>
+                            <button class="btn btn-info" onclick="exportContacts()">
+                                <i class="fas fa-download"></i> Export Contacts
+                            </button>
+                            <button class="btn btn-secondary" onclick="refreshStats()">
+                                <i class="fas fa-sync-alt"></i> Refresh Stats
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Sources -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-pie"></i> Top Sources
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="top-sources-list">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Controls -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-broadcast-tower"></i> Real-time Controls
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-info" onclick="toggleRealTimeFeatures()">
+                                <i class="fas fa-toggle-on"></i> Toggle Real-time
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="requestSystemUpdate()">
+                                <i class="fas fa-sync"></i> Request System Update
+                            </button>
+                            <button class="btn btn-outline-success" onclick="testWebSocketConnection()">
+                                <i class="fas fa-plug"></i> Test Connection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Chart Row -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line"></i> Performance Monitoring
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="performance-chart" width="400" height="100"></canvas>
+                        <p class="text-muted mt-2">
+                            <small>Real-time performance metrics (CPU, Memory, Request Rate)</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Status Modal -->
+    <div class="modal fade" id="connection-status-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-wifi"></i> Connection Status
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>WebSocket Connection</h6>
+                            <p id="ws-connection-details" class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>API Endpoints</h6>
+                            <div id="api-endpoint-status">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>Config Endpoint</span>
+                                    <span id="config-status" class="badge bg-secondary">Checking...</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>Listings Endpoint</span>
+                                    <span id="listings-status" class="badge bg-secondary">Checking...</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>Contacts Endpoint</span>
+                                    <span id="contacts-status" class="badge bg-secondary">Checking...</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>System Endpoint</span>
+                                    <span id="system-endpoint-status" class="badge bg-secondary">Checking...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="testAllConnections()">Test All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        <!-- Toasts will be added here dynamically -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2024 MWA Core - Munich Apartment Finder Assistant</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="mb-0">
+                        <small>Last updated: <span id="last-updated"></span></small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/dashboard-realtime.js"></script>
+    <script>
+        // Enhanced dashboard initialization with real-time features
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('MWA Core Dashboard initialized');
+            
+            // Initialize basic dashboard
+            loadDashboardStats();
+            loadRecentContacts();
+            loadTopSources();
+            updateLastUpdated();
+            
+            // Check API endpoints
+            checkAPIEndpoints();
+            
+            // Show connection status modal on first load
+            setTimeout(() => {
+                const connectionModal = new bootstrap.Modal(document.getElementById('connection-status-modal'));
+                connectionModal.show();
+            }, 1000);
+            
+            // Auto-refresh every 30 seconds (can be toggled)
+            window.dashboardInterval = setInterval(function() {
+                if (window.realtimeDashboard && window.realtimeDashboard.isAutoRefreshEnabled) {
+                    loadDashboardStats();
+                    loadRecentContacts();
+                }
+            }, 30000);
+        });
+
+        // Real-time control functions
+        function toggleRealTimeFeatures() {
+            if (window.realtimeDashboard) {
+                window.realtimeDashboard.toggleAutoRefresh();
+            }
+        }
+
+        function requestSystemUpdate() {
+            if (window.realtimeDashboard) {
+                window.realtimeDashboard.requestManualUpdate();
+            }
+        }
+
+        function testWebSocketConnection() {
+            if (window.wsClient) {
+                console.log('Testing WebSocket connection...');
+                window.wsClient.sendMessage({
+                    type: 'ping',
+                    data: { timestamp: new Date().toISOString() }
+                });
+                showNotification('WebSocket test message sent', 'info');
+            } else {
+                showNotification('WebSocket client not available', 'warning');
+            }
+        }
+
+        function checkAPIEndpoints() {
+            const endpoints = [
+                { name: 'config', url: '/api/v1/config' },
+                { name: 'listings', url: '/api/v1/listings' },
+                { name: 'contacts', url: '/api/v1/contacts' },
+                { name: 'system-endpoint', url: '/api/v1/system/info' }
+            ];
+
+            endpoints.forEach(endpoint => {
+                const statusElement = document.getElementById(`${endpoint.name.replace('-', '')}-status`);
+                if (statusElement) {
+                    fetch(endpoint.url)
+                        .then(response => {
+                            if (response.ok || response.status === 401) {
+                                statusElement.className = 'badge bg-success';
+                                statusElement.textContent = 'Online';
+                            } else {
+                                statusElement.className = 'badge bg-warning';
+                                statusElement.textContent = 'Warning';
+                            }
+                        })
+                        .catch(() => {
+                            statusElement.className = 'badge bg-danger';
+                            statusElement.textContent = 'Offline';
+                        });
+                }
+            });
+        }
+
+        function testAllConnections() {
+            showNotification('Testing all connections...', 'info');
+            checkAPIEndpoints();
+            testWebSocketConnection();
+        }
+
+        // Enhanced notification system
+        function showNotification(message, type = 'info', duration = 5000) {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            
+            const toast = document.createElement('div');
+            toast.id = toastId;
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast, { delay: duration });
+            bsToast.show();
+            
+            // Remove toast element after it's hidden
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+
+        // Performance monitoring
+        function updatePerformanceMetrics() {
+            // This would be called by the real-time dashboard
+            const now = new Date();
+            const metrics = {
+                timestamp: now,
+                cpu: Math.random() * 100, // Placeholder - would come from API
+                memory: Math.random() * 100, // Placeholder - would come from API
+                requests: Math.floor(Math.random() * 100) // Placeholder
+            };
+            
+            // Update displays
+            document.getElementById('cpu-usage').textContent = metrics.cpu.toFixed(1) + '%';
+            document.getElementById('memory-usage').textContent = metrics.memory.toFixed(1) + '%';
+        }
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            if (window.wsClient) {
+                window.wsClient.disconnect();
+            }
+            if (window.dashboardInterval) {
+                clearInterval(window.dashboardInterval);
+            }
+        });
+    </script>
+</body>
+</html>

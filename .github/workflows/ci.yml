@@ -42,20 +42,104 @@ jobs:
     - name: Install dev dependencies
       run: poetry install --no-interaction
     
-    - name: Run tests
-      run: poetry run pytest tests/ -v
+    - name: Run security checks
+      run: |
+        poetry run safety check
+        poetry run bandit -r mafa/ -f json -o bandit-report.json || true
+    
+    - name: Run type checking
+      run: |
+        poetry run mypy mafa/ --ignore-missing-imports || true
+    
+    - name: Run tests with coverage
+      run: |
+        poetry run pytest tests/ -v --cov=mafa --cov-report=xml --cov-report=html --cov-fail-under=70
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
     
     - name: Run linting
       run: |
         poetry run black --check .
         poetry run isort --check-only .
         poetry run flake8 .
+        poetry run pylint mafa/ --exit-zero || true
+    
+    - name: Run code quality analysis
+      run: |
+        poetry run xenon --max-absolute B --max-modules B --max-average A mafa/ || true
+        poetry run radon cc mafa/ --min B || true
+    
+    - name: Test dry-run functionality
+      run: |
+        poetry run python run.py --dry-run --config config.example.json || true
     
     - name: Build Docker image
       run: docker build -t mafa:latest .
     
-  docker:
+    - name: Test Docker image
+      run: |
+        docker run --rm -d --name mafa-test mafa:latest
+        sleep 10
+        docker logs mafa-test
+        docker stop mafa-test || true
+
+  integration-tests:
+    runs-on: ubuntu-latest
     needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+    
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
+    - name: Install dependencies
+      run: poetry install --no-interaction
+    
+    - name: Run integration tests
+      run: |
+        poetry run pytest tests/ -v -m integration || true
+    
+    - name: Test MCP shim
+      run: |
+        poetry run python tools/mcp-shim/mafa-health-monitor.py --help || true
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  docker:
+    needs: [test, integration-tests]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     
@@ -72,9 +156,69 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     
-    - name: Build and push
+    - name: Build and push production image
       uses: docker/build-push-action@v5
       with:
         context: .
         push: true
         tags: ghcr.io/${{ github.repository }}:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build and push development image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile.dev
+        push: true
+        tags: ghcr.io/${{ github.repository }}:dev
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  performance-test:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+    
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
+    - name: Install dependencies
+      run: poetry install --no-interaction
+    
+    - name: Run performance tests
+      run: |
+        poetry run pytest tests/ -v -m performance || true
+    
+    - name: Profile code performance
+      run: |
+        poetry run python -m cProfile -o profile.stats run.py --dry-run --config config.example.json || true
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [test, integration-tests, security-scan]
+    if: always()
+    
+    steps:
+    - name: Notify on success
+      if: needs.test.result == 'success' && needs.integration-tests.result == 'success' && needs.security-scan.result == 'success'
+      run: |
+        echo "✅ All CI checks passed successfully!"
+    
+    - name: Notify on failure
+      if: needs.test.result == 'failure' || needs.integration-tests.result == 'failure' || needs.security-scan.result == 'failure'
+      run: |
+        echo "❌ CI checks failed. Please review the logs."
+        exit 1

@@ -1,0 +1,152 @@
+{
+  "personal_profile": {
+    "my_full_name": "Max Mustermann",
+    "my_profession": "Software Engineer",
+    "my_employer": "Tech Company GmbH",
+    "net_household_income_monthly": 5000,
+    "total_occupants": 2,
+    "intro_paragraph": "Ich bin ein verantwortungsvoller Mieter mit stabilem Einkommen und suche eine langfristige Wohnung in München."
+  },
+  "search_criteria": {
+    "max_price": 1500,
+    "min_rooms": 2,
+    "zip_codes": [
+      "80331", "80333", "80335", "80336", "80337", "80469", "80538", "80539",
+      "80636", "80637", "80638", "80639", "80796", "80797", "80798", "80799",
+      "80801", "80802", "80803", "80804", "80805", "80807", "80809",
+      "80933", "80935", "80937", "80939", "80992", "80993", "80995", "80997", "80999"
+    ]
+  },
+  "notification": {
+    "provider": "discord",
+    "discord_webhook_url": "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL",
+    "contact_discovery_alerts": true,
+    "validation_failure_alerts": true
+  },
+  "notifiers": {
+    "discord": {
+      "enabled": true,
+      "webhook_url": "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL",
+      "username": "MWA Bot",
+      "avatar_url": null,
+      "use_embeds": true,
+      "max_retries": 3,
+      "retry_delay": 1.0,
+      "rate_limit_delay": 0
+    },
+    "email": {
+      "enabled": true,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "username": "your-email@gmail.com",
+      "password": "your-app-password",
+      "sender_email": "your-email@gmail.com",
+      "sender_name": "MWA Notifications",
+      "recipients": ["recipient1@example.com", "recipient2@example.com"],
+      "cc_recipients": [],
+      "bcc_recipients": [],
+      "use_tls": true,
+      "use_ssl": false,
+      "template_dir": "mwa_core/notifier/templates",
+      "default_template": "email_default.html",
+      "use_html": true,
+      "max_retries": 3,
+      "retry_delay": 1.0,
+      "rate_limit_delay": 1.0
+    },
+    "slack": {
+      "enabled": false,
+      "webhook_url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+      "channel": null,
+      "username": "MWA Bot",
+      "icon_emoji": ":robot_face:",
+      "icon_url": null,
+      "use_blocks": true,
+      "max_retries": 3,
+      "retry_delay": 1.0,
+      "rate_limit_delay": 0
+    },
+    "webhook": {
+      "enabled": false,
+      "url": "https://your-webhook-endpoint.com/notify",
+      "method": "POST",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "auth": null,
+      "query_params": {},
+      "content_type": "application/json",
+      "timeout": 30,
+      "follow_redirects": true,
+      "verify_ssl": true,
+      "payload_template": null,
+      "use_raw_content": false,
+      "custom_payload_keys": {},
+      "success_status_codes": [200, 201, 202, 204],
+      "response_key_path": null,
+      "max_retries": 3,
+      "retry_delay": 1.0,
+      "rate_limit_delay": 0
+    }
+  },
+  "contact_discovery": {
+    "enabled": true,
+    "confidence_threshold": "medium",
+    "validation_enabled": true,
+    "validation_level": "standard",
+    "rate_limit_seconds": 1.0,
+    "max_crawl_depth": 2,
+    "blocked_domains": ["spam.com", "test.com"],
+    "preferred_contact_methods": ["email", "phone", "form", "social_media"],
+    "smart_crawling": true,
+    "smtp_verification": false,
+    "dns_verification": true,
+    "ocr_extraction": true,
+    "pdf_extraction": true,
+    "social_media_detection": true,
+    "respect_robots_txt": true,
+    "user_agent": "MWA-ContactDiscovery/1.0 (Compatible; Real Estate Contact Discovery)",
+    "max_concurrent_requests": 5,
+    "request_timeout": 30,
+    "retry_attempts": 3,
+    "cultural_context": "german",
+    "language_preference": "de"
+  },
+  "storage": {
+    "contact_retention_days": 90,
+    "auto_cleanup_enabled": true,
+    "backup_enabled": true,
+    "backup_interval_days": 7,
+    "database_path": "data/mwa_core.db",
+    "deduplication_enabled": true,
+    "validation_history_retention_days": 365
+  },
+  "scraper": {
+    "enabled_providers": ["immoscout", "wg_gesucht"],
+    "request_delay_seconds": 1.0,
+    "max_retries": 3,
+    "timeout_seconds": 30,
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "contact_discovery_enabled": true,
+    "contact_discovery_timeout": 30
+  },
+  "scheduler": {
+    "enabled": true,
+    "timezone": "Europe/Berlin",
+    "persistent": true,
+    "job_store_path": "data/scheduler.db",
+    "max_workers": 5,
+    "job_defaults": {
+      "coalesce": true,
+      "max_instances": 1,
+      "misfire_grace_time": 300
+    }
+  },
+  "notification_system_enabled": true,
+  "notification_history_retention_days": 30,
+  "max_notification_queue_size": 1000,
+  "log_level": "INFO",
+  "performance_tracking": true,
+  "metrics_retention_days": 30
+}

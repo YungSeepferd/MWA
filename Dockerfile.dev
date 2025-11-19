@@ -1,0 +1,75 @@
+FROM python:3.11-slim
+
+# Install system dependencies for development
+RUN apt-get update && apt-get install -y \
+    wget \
+    unzip \
+    curl \
+    gnupg \
+    git \
+    vim \
+    htop \
+    tree \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Google Chrome for Selenium
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ChromeDriver
+RUN CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
+    wget -N http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \
+    unzip chromedriver_linux64.zip && \
+    chmod +x chromedriver && \
+    mv chromedriver /usr/local/bin/ && \
+    rm chromedriver_linux64.zip
+
+# Set working directory
+WORKDIR /app
+
+# Install Poetry
+RUN pip install poetry==1.7.1
+
+# Configure Poetry
+RUN poetry config virtualenvs.create true \
+    && poetry config virtualenvs.in-project true \
+    && poetry config cache-dir /root/.cache/pypoetry
+
+# Copy pyproject.toml and poetry.lock first for better caching
+COPY pyproject.toml poetry.lock* ./
+
+# Install dependencies (including dev dependencies)
+RUN poetry install --no-interaction
+
+# Copy source code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p data logs test-results health-checks analysis-reports roadmaps
+
+# Set environment variables
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    MAFA_ENV=development \
+    MAFA_LOG_LEVEL=DEBUG
+
+# Expose ports for development
+EXPOSE 8000 8001 3000 3001
+
+# Add development scripts to PATH
+ENV PATH="/app/scripts:$PATH"
+
+# Default command for development
+CMD ["poetry", "run", "python", "run.py"]
+
+# Development-specific labels
+LABEL maintainer="MAFA Development Team" \
+      description="MAFA Development Environment" \
+      version="0.1.0-dev"
+
+# Health check for development
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD poetry run python -c "import mafa.orchestrator; print('OK')" || exit 1

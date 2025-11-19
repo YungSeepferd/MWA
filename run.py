@@ -35,10 +35,8 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # The orchestrator currently does not expose a dry‑run flag, but we can
-    # honour it by simply not calling the DB persistence layer when the flag
-    # is set. For now we pass the config path and let the orchestrator handle it.
-    orchestrator_run(config_path=args.config)
+    # Pass the dry-run flag to the orchestrator
+    orchestrator_run(config_path=args.config, dry_run=args.dry_run)
 
 
 if __name__ == "__main__":

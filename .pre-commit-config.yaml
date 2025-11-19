@@ -1,0 +1,119 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: check-docstring-first
+
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        language_version: python3
+        args: [--line-length=120]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=120]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        args: [--max-line-length=120, --extend-ignore=E203,W503,E501]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+        args: [--ignore-missing-imports, --no-strict-optional]
+        exclude: ^(tests/|test_)
+
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: [-r, mafa/, api/]
+        exclude: ^tests/
+
+  - repo: https://github.com/pycqa/pylint
+    rev: v2.17.7
+    hooks:
+      - id: pylint
+        args: [--max-line-length=120, --disable=C0114,C0115,C0116,R0903,R0913,W0511,W0613]
+        exclude: ^tests/
+
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: poetry run pytest tests/ -q --co -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: pytest
+        name: pytest
+        entry: poetry run pytest tests/ --maxfail=1
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: safety-check
+        name: safety-check
+        entry: poetry run safety check
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: coverage-check
+        name: coverage-check
+        entry: poetry run coverage report --fail-under=70
+        language: system
+        pass_filenames: false
+        always_run: true
+        additional_dependencies: [coverage]
+
+      - id: xenon-check
+        name: xenon-check
+        entry: poetry run xenon --max-absolute B --max-modules B --max-average A mafa/
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: radon-check
+        name: radon-check
+        entry: poetry run radon cc mafa/ --min B
+        language: system
+        pass_filenames: false
+        always_run: true
+
+# Configuration for specific file types
+exclude: |
+  (?x)^(
+    \.git/|
+    \.mypy_cache/|
+    \.pytest_cache/|
+    \.venv/|
+    \.tox/|
+    build/|
+    dist/|
+    htmlcov/|
+    .*\.egg-info/|
+    __pycache__/|
+    .*\.pyc|
+    .*\.pyo|
+    .*\.pyd|
+    .*\.so
+  )$

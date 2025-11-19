@@ -1,28 +1,48 @@
-[project]
+[tool.poetry]
 name = "mwa-munchewohnungsassistent"
 version = "0.1.0"
-packages = [{include = "mafa"}]
-description = "Munich Apartment Finder Assistant (MAFA) – a Python tool for scraping listings and notifying users."
-authors = [
-    {name = "Vincent Göke",email = "goeke.vincent@gmail.de"}
-]
+description = "Modular apartment scraping and notification system"
+authors = ["Your Name <you@example.com>"]
 readme = "README.md"
-requires-python = ">=3.10"
-dependencies = [
-    "selenium>=4.20,<5",
-    "webdriver-manager>=4.0.0",
-    "pydantic>=2.0,<3",
-    "python-dotenv>=1.0.0",
-    "loguru>=0.7.0",
-    "httpx>=0.27.0",
-    "apscheduler>=3.10.0",
-    "fastapi>=0.104.0",
-    "uvicorn>=0.24.0",
-    "jinja2>=3.1.0",
-    "streamlit>=1.30.0"
+packages = [
+    { include = "mafa" },
+    { include = "mwa_core" },
+    { include = "api" },
+    { include = "tests" },
 ]
 
+[tool.poetry.dependencies]
+python = "^3.10"
+selenium = "^4.15.0"
+httpx = "^0.25.0"
+jinja2 = "^3.1.2"
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+apscheduler = "^3.10.4"
+fastapi = "^0.104.1"
+uvicorn = "^0.24.0"
+sqlalchemy = "^2.0.23"
+alembic = "^1.12.1"
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+psutil = "^7.1.3"
+beautifulsoup4 = "^4.14.2"
+bleach = "^6.3.0"
+dnspython = "^2.8.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.11.0"
+isort = "^5.12.0"
+mypy = "^1.7.1"
+pre-commit = "^3.6.0"
+
+[tool.poetry.scripts]
+mwa = "mwa_core.cli:main"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.plugins."mwa_core.providers"]
+immoscout = "mwa_core.providers:ImmoScoutProvider"
+wg_gesucht = "mwa_core.providers:WGGesuchtProvider"
