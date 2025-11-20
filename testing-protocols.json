@@ -1,0 +1,34 @@
+{
+  "automated": {
+    "frequency": "continuous",
+    "triggers": [
+      "code_change",
+      "deployment",
+      "scheduled"
+    ],
+    "coverage": "95%",
+    "timeout": "30 minutes"
+  },
+  "manual": {
+    "frequency": "per_feature_migration",
+    "triggers": [
+      "feature_completion",
+      "major_changes"
+    ],
+    "coverage": "critical_paths_only",
+    "timeout": "2 hours"
+  },
+  "performance": {
+    "frequency": "pre_post_migration",
+    "metrics": [
+      "response_time",
+      "throughput",
+      "memory_usage"
+    ],
+    "thresholds": {
+      "response_time": "<= 2 seconds",
+      "throughput": ">= 100 requests/second",
+      "memory_usage": "<= 80%"
+    }
+  }
+}

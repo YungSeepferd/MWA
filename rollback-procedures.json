@@ -1,0 +1,26 @@
+{
+  "feature_level": {
+    "procedure": "Feature flag toggle",
+    "time_estimate": "5 minutes",
+    "risk": "low",
+    "validation": "Immediate functionality verification"
+  },
+  "component_level": {
+    "procedure": "Component version rollback",
+    "time_estimate": "15 minutes",
+    "risk": "medium",
+    "validation": "Component integration testing"
+  },
+  "system_level": {
+    "procedure": "Database restore + deployment rollback",
+    "time_estimate": "1 hour",
+    "risk": "high",
+    "validation": "Full system validation"
+  },
+  "emergency": {
+    "procedure": "Complete system restore from backup",
+    "time_estimate": "4 hours",
+    "risk": "critical",
+    "validation": "Comprehensive system testing"
+  }
+}

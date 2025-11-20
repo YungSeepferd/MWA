@@ -192,7 +192,7 @@ class Listing(Base):
 
 
 class Contact(Base):
-    """SQLAlchemy model for contacts."""
+    """SQLAlchemy model for contacts with market intelligence capabilities."""
     
     __tablename__ = "contacts"
     
@@ -202,7 +202,7 @@ class Contact(Base):
     value = Column(String(500), nullable=False)
     confidence = Column(Float, nullable=True)
     source = Column(String(50), nullable=True)
-    status = Column(SQLEnum(ContactStatus), nullable=False, 
+    status = Column(SQLEnum(ContactStatus), nullable=False,
                    default=ContactStatus.UNVALIDATED, index=True)
     validated_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=func.now())
@@ -214,9 +214,30 @@ class Contact(Base):
     usage_count = Column(Integer, nullable=False, default=0)
     last_used_at = Column(DateTime, nullable=True)
     
+    # Market Intelligence Fields
+    position = Column(String(100), nullable=True)
+    company_name = Column(String(200), nullable=True)
+    agency_type = Column(String(50), nullable=True, index=True)
+    market_areas = Column(Text, nullable=True)  # JSON array of market areas
+    outreach_history = Column(Text, nullable=True)  # JSON array of outreach history
+    preferred_contact_method = Column(String(20), nullable=True)
+    last_contacted = Column(DateTime, nullable=True, index=True)
+    confidence_score = Column(Float, nullable=True, default=0.0, index=True)
+    quality_score = Column(Float, nullable=True, default=0.0, index=True)
+    is_active = Column(Boolean, nullable=False, default=True, index=True)
+    is_blacklisted = Column(Boolean, nullable=False, default=False, index=True)
+    blacklist_reason = Column(Text, nullable=True)
+    scraped_from_url = Column(String(1000), nullable=True)
+    source_provider = Column(String(50), nullable=True, index=True)
+    extraction_method = Column(String(50), nullable=True)
+    extraction_confidence = Column(Float, nullable=True)
+    lead_source = Column(String(50), nullable=True, index=True)
+    tags = Column(Text, nullable=True)  # JSON array of tags
+    notes = Column(Text, nullable=True)
+    
     # Relationships
     listing = relationship("Listing", back_populates="contact_entries")
-    validation_history = relationship("ContactValidation", back_populates="contact", 
+    validation_history = relationship("ContactValidation", back_populates="contact",
                                     cascade="all, delete-orphan")
     
     __table_args__ = (
@@ -246,6 +267,26 @@ class Contact(Base):
             "validation_metadata": self.get_validation_metadata(),
             "usage_count": self.usage_count,
             "last_used_at": self.last_used_at.isoformat() if self.last_used_at else None,
+            # Market Intelligence Fields
+            "position": self.position,
+            "company_name": self.company_name,
+            "agency_type": self.agency_type,
+            "market_areas": self.get_market_areas(),
+            "outreach_history": self.get_outreach_history(),
+            "preferred_contact_method": self.preferred_contact_method,
+            "last_contacted": self.last_contacted.isoformat() if self.last_contacted else None,
+            "confidence_score": self.confidence_score,
+            "quality_score": self.quality_score,
+            "is_active": self.is_active,
+            "is_blacklisted": self.is_blacklisted,
+            "blacklist_reason": self.blacklist_reason,
+            "scraped_from_url": self.scraped_from_url,
+            "source_provider": self.source_provider,
+            "extraction_method": self.extraction_method,
+            "extraction_confidence": self.extraction_confidence,
+            "lead_source": self.lead_source,
+            "tags": self.get_tags(),
+            "notes": self.notes,
         }
     
     def get_validation_metadata(self) -> Dict[str, Any]:
@@ -260,12 +301,51 @@ class Contact(Base):
     def set_validation_metadata(self, metadata: Dict[str, Any]) -> None:
         """Set validation metadata from dict."""
         self.validation_metadata = json.dumps(metadata) if metadata else None
-    
+
+    def get_market_areas(self) -> List[str]:
+        """Get market areas as list."""
+        if not self.market_areas:
+            return []
+        try:
+            return json.loads(self.market_areas)
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def set_market_areas(self, market_areas: List[str]) -> None:
+        """Set market areas from list."""
+        self.market_areas = json.dumps(market_areas) if market_areas else None
+
+    def get_outreach_history(self) -> List[Dict[str, Any]]:
+        """Get outreach history as list."""
+        if not self.outreach_history:
+            return []
+        try:
+            return json.loads(self.outreach_history)
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def set_outreach_history(self, outreach_history: List[Dict[str, Any]]) -> None:
+        """Set outreach history from list."""
+        self.outreach_history = json.dumps(outreach_history) if outreach_history else None
+
+    def get_tags(self) -> List[str]:
+        """Get tags as list."""
+        if not self.tags:
+            return []
+        try:
+            return json.loads(self.tags)
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def set_tags(self, tags: List[str]) -> None:
+        """Set tags from list."""
+        self.tags = json.dumps(tags) if tags else None
+
     def generate_hash_signature(self) -> str:
         """Generate SHA-256 hash signature."""
         hash_string = f"{self.listing_id}|{self.type.value}|{self.value}"
         return hashlib.sha256(hash_string.encode('utf-8')).hexdigest()
-    
+
     def update_hash_signature(self) -> None:
         """Update the hash signature."""
         self.hash_signature = self.generate_hash_signature()
@@ -280,6 +360,7 @@ class ScrapingRun(Base):
     provider = Column(String(50), nullable=False, index=True)
     status = Column(SQLEnum(JobStatus), nullable=False, default=JobStatus.PENDING, index=True)
     started_at = Column(DateTime, nullable=False, default=func.now(), index=True)
+    created_at = Column(DateTime, nullable=False, default=func.now(), index=True)
     completed_at = Column(DateTime, nullable=True)
     listings_found = Column(Integer, nullable=False, default=0)
     listings_processed = Column(Integer, nullable=False, default=0)
@@ -316,6 +397,7 @@ class ScrapingRun(Base):
             "provider": self.provider,
             "status": self.status.value if self.status else None,
             "started_at": self.started_at.isoformat() if self.started_at else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
             "listings_found": self.listings_found,
             "listings_processed": self.listings_processed,

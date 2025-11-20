@@ -1,0 +1,78 @@
+{
+  "metrics": {
+    "migration_progress": {
+      "type": "percentage",
+      "target": 100,
+      "alert_threshold": 90
+    },
+    "test_coverage": {
+      "type": "percentage",
+      "target": 95,
+      "alert_threshold": 85
+    },
+    "error_rate": {
+      "type": "percentage",
+      "target": 0,
+      "alert_threshold": 1
+    },
+    "performance_degradation": {
+      "type": "percentage",
+      "target": 0,
+      "alert_threshold": 10
+    }
+  },
+  "alerts": [
+    {
+      "id": "ALERT-001",
+      "name": "Migration Progress Stalled",
+      "condition": "migration_progress < 10% for 24 hours",
+      "severity": "high",
+      "actions": [
+        "notify_team",
+        "pause_migration"
+      ]
+    },
+    {
+      "id": "ALERT-002",
+      "name": "Test Coverage Below Target",
+      "condition": "test_coverage < 85%",
+      "severity": "medium",
+      "actions": [
+        "notify_team",
+        "block_deployment"
+      ]
+    },
+    {
+      "id": "ALERT-003",
+      "name": "Error Rate Increased",
+      "condition": "error_rate > 1%",
+      "severity": "high",
+      "actions": [
+        "notify_team",
+        "rollback_feature"
+      ]
+    },
+    {
+      "id": "ALERT-004",
+      "name": "Performance Degradation",
+      "condition": "performance_degradation > 10%",
+      "severity": "medium",
+      "actions": [
+        "notify_team",
+        "investigate_cause"
+      ]
+    }
+  ],
+  "notifications": {
+    "channels": [
+      "slack",
+      "email",
+      "dashboard"
+    ],
+    "recipients": [
+      "dev-team",
+      "qa-team",
+      "product-owner"
+    ]
+  }
+}

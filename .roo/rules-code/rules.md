@@ -1,1 +1,0 @@
-Make use of your MCP tools like sequential_thinking and context7 to yield a better result in planing and during implementation phases.

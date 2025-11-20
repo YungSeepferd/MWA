@@ -38,36 +38,65 @@ class ImmoScoutProvider:
         
         for attempt in range(self.max_retries):
             try:
+                print(f"Attempt {attempt + 1}/{self.max_retries} - Starting ImmoScout scraping...")
                 with SeleniumDriver() as driver:
+                    print("SeleniumDriver created successfully")
                     driver.set_page_load_timeout(30)
+                    print(f"Navigating to: {self.URL}")
                     driver.get(self.URL)
+                    print("Page loaded successfully")
                     
                     # Add random delay to avoid detection
                     time.sleep(random.uniform(2, 5))
+                    print("Random delay completed")
+                    
+                    # Wait for JavaScript to render content
+                    print("Waiting for JavaScript to render listings...")
+                    time.sleep(3)  # Wait for dynamic content to load
                     
                     # Try to find listing elements
                     try:
-                        items = driver.find_elements(By.CLASS_NAME, "result-list-entry", timeout=10)
-                    except TimeoutException:
-                        raise ScrapingError("Timeout while waiting for listings to load")
+                        print("Trying primary selector: listing-card")
+                        items = driver.find_elements(By.CLASS_NAME, "listing-card")
+                        print(f"Found {len(items)} items with primary selector")
+                    except Exception as e:
+                        print(f"Error with primary selector: {e}")
+                        items = []
                     
                     if not items:
                         # Try alternative selectors in case the page structure changed
                         alternative_selectors = [
-                            ".result-item",
-                            ".listing-item",
-                            "[data-qa='result-item']"
+                            ".cardContainer",
+                            "[data-obid]",
+                            ".result-list-entry"
                         ]
                         
                         for selector in alternative_selectors:
                             try:
-                                items = driver.find_elements(By.CSS_SELECTOR, selector, timeout=5)
+                                items = driver.find_elements(By.CSS_SELECTOR, selector)
                                 if items:
+                                    print(f"Found {len(items)} items with alternative selector: {selector}")
                                     break
-                            except TimeoutException:
+                                else:
+                                    print(f"No items found with alternative selector: {selector}")
+                            except Exception as e:
+                                print(f"Error with alternative selector {selector}: {e}")
                                 continue
                         
                         if not items:
+                            print("No listings found with any selector - checking page content")
+                            page_source = driver.page_source[:500]  # Get first 500 chars for debugging
+                            print(f"Page content preview: {page_source}")
+                            
+                            # Save full page source for analysis
+                            with open("/tmp/immoscout_page_source.html", "w", encoding="utf-8") as f:
+                                f.write(driver.page_source)
+                            print("Full page source saved to /tmp/immoscout_page_source.html")
+                            
+                            # Check if there's a captcha or blocking message
+                            if "captcha" in driver.page_source.lower() or "robot" in driver.page_source.lower():
+                                print("Detected possible bot blocking or captcha")
+                            
                             raise ScrapingError("No listings found with any selector")
                     
                     # Extract listing data
