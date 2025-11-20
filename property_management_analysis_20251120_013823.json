@@ -1,0 +1,55 @@
+{
+  "analysis_summary": {
+    "total_contacts_analyzed": 0,
+    "potential_property_managers_found": 0,
+    "high_confidence_matches": 0,
+    "german_property_management_companies": 0,
+    "analysis_timestamp": "2025-11-20T01:38:23.583032",
+    "confidence_distribution": {
+      "very_high_0.9_1.0": 0,
+      "high_0.7_0.9": 0,
+      "medium_0.5_0.7": 0,
+      "low_0.3_0.5": 0
+    }
+  },
+  "high_confidence_property_managers": [],
+  "german_property_management_companies": [],
+  "detailed_analysis": {
+    "business_contact_statistics": {},
+    "source_analysis": {},
+    "recommendations": [
+      "Low average confidence scores - consider refining property management detection patterns"
+    ]
+  },
+  "methodology": {
+    "confidence_scoring": "Multi-factor scoring based on business indicators",
+    "german_terms_matched": [
+      "hausverwaltung",
+      "hausverwaltungen",
+      "immobilienverwaltung",
+      "weg-verwaltung",
+      "verwaltung",
+      "immobilien",
+      "property management",
+      "gmbh",
+      "ag",
+      "kgaa",
+      "ug",
+      "limited",
+      "unternehmen"
+    ],
+    "business_email_patterns": [
+      "business",
+      "company",
+      "enterprise",
+      "office",
+      "service",
+      "management",
+      "immobilien",
+      "property",
+      "realestate"
+    ],
+    "minimum_confidence_threshold": 0.3,
+    "high_confidence_threshold": 0.7
+  }
+}

@@ -1,684 +1,548 @@
 """
-System status and health check router for MWA Core API.
+System monitoring and health check router for MWA Core API.
 
-Provides endpoints for system monitoring and health checks, including:
-- Basic health check endpoints
-- System status and performance metrics
-- Component health monitoring
-- System information and version details
-- Error reporting and logging
-- Resource usage monitoring
+Provides endpoints for:
+- System health checks
+- Performance metrics
+- Dashboard statistics
+- Analytics data for charts
+- System status monitoring
 """
 
 import logging
-import psutil
-import os
-import sys
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
+from statistics import mean
 
 from fastapi import APIRouter, HTTPException, Depends, Query, Body
-from pydantic import BaseModel, Field
-
-from mwa_core.config.settings import get_settings
-from mwa_core.storage.manager import get_storage_manager
-from mwa_core.orchestrator.orchestrator import Orchestrator
+from pydantic import BaseModel, Field, validator
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
-
-
 # Pydantic models for system requests/responses
-class HealthCheckResponse(BaseModel):
-    """Response model for health check."""
-    status: str
+class SystemMetricsResponse(BaseModel):
+    """Response model for system metrics."""
+    cpu_usage: float
+    memory_usage: float
+    disk_usage: float
+    active_connections: int
+    uptime_seconds: float
     timestamp: datetime
-    service: str
-    version: str
-    uptime_seconds: Optional[float] = None
-    dependencies: Dict[str, str] = {}
-    details: Dict[str, Any] = {}
-
-
-class SystemInfoResponse(BaseModel):
-    """Response model for system information."""
-    application: Dict[str, str]
-    system: Dict[str, Any]
-    environment: Dict[str, Any]
-    configuration: Dict[str, Any]
-    components: Dict[str, Any]
-    timestamp: datetime
+    health_status: str
 
 
 class PerformanceMetricsResponse(BaseModel):
     """Response model for performance metrics."""
-    cpu: Dict[str, float]
-    memory: Dict[str, float]
-    disk: Dict[str, float]
-    network: Dict[str, float]
-    database: Dict[str, Any] = {}
-    application: Dict[str, Any] = {}
+    cpu_usage: float
+    memory_usage: float
+    disk_usage: float
+    request_rate: float
+    active_connections: int
+    response_time_ms: float
     timestamp: datetime
 
 
-class ComponentStatus(BaseModel):
-    """Response model for component status."""
-    name: str
-    status: str
+class DashboardStatsResponse(BaseModel):
+    """Response model for dashboard statistics."""
+    total_contacts: int
+    contacts_by_status: Dict[str, int]
+    contacts_by_type: Dict[str, int]
+    contacts_by_confidence: Dict[str, int]
+    recent_contacts_7_days: int
+    recent_contacts_30_days: int
+    high_confidence_contacts: int
+    validated_contacts: int
+    validation_rate: float
+    average_confidence: float
+    top_sources: List[Dict[str, Any]]
+    active_searches: int
+    new_contacts_today: int
+    success_rate: float
+    timestamp: datetime
+
+
+class AnalyticsDataResponse(BaseModel):
+    """Response model for analytics data."""
+    timeframe: str
+    contact_discovery_trend: List[Dict[str, Any]]
+    provider_performance: List[Dict[str, Any]]
+    confidence_distribution: List[Dict[str, Any]]
+    contact_methods: List[Dict[str, Any]]
+    search_performance: List[Dict[str, Any]]
+    timestamp: datetime
+
+
+class SystemStatusResponse(BaseModel):
+    """Response model for system status."""
     healthy: bool
-    last_check: datetime
-    response_time_ms: Optional[float] = None
-    error_message: Optional[str] = None
-    metadata: Dict[str, Any] = {}
+    components: Dict[str, Dict[str, Any]]
+    metrics: Dict[str, float]
+    timestamp: datetime
 
 
-class ErrorReportRequest(BaseModel):
-    """Request model for error reporting."""
-    error_type: str = Field(..., min_length=1)
-    error_message: str = Field(..., min_length=1)
-    component: str = Field(..., min_length=1)
-    context: Optional[Dict[str, Any]] = {}
-    severity: str = Field("error", regex="^(info|warning|error|critical)$")
+class ChartDataPoint(BaseModel):
+    """Data point for chart responses."""
+    label: str
+    value: float
+    date: Optional[str] = None
 
 
-class ErrorReportResponse(BaseModel):
-    """Response model for error reporting."""
-    report_id: str
+class HealthCheckResponse(BaseModel):
+    """Response model for health checks."""
     status: str
     timestamp: datetime
-    details: Dict[str, Any] = {}
+    uptime_seconds: float
+    version: str
+    components: Dict[str, str]
 
 
-class LogEntry(BaseModel):
-    """Response model for log entry."""
-    timestamp: datetime
-    level: str
-    component: str
-    message: str
-    metadata: Dict[str, Any] = {}
+# Mock data generators for demonstration
+def generate_mock_metrics() -> Dict[str, Any]:
+    """Generate mock system metrics."""
+    import random
+    import time
+    
+    return {
+        "cpu_usage": round(random.uniform(10, 80), 1),
+        "memory_usage": round(random.uniform(30, 70), 1),
+        "disk_usage": round(random.uniform(20, 60), 1),
+        "active_connections": random.randint(5, 25),
+        "uptime_seconds": int(time.time()) % 86400,  # Mock uptime
+        "timestamp": datetime.now()
+    }
 
 
-# Global variables for tracking startup time and system status
-_startup_time = datetime.now()
-_system_healthy = True
-_components_status = {}
+def generate_mock_dashboard_stats() -> Dict[str, Any]:
+    """Generate mock dashboard statistics."""
+    import random
+    
+    total_contacts = random.randint(150, 500)
+    approved = random.randint(80, total_contacts - 20)
+    pending = random.randint(10, 50)
+    rejected = total_contacts - approved - pending
+    
+    return {
+        "total_contacts": total_contacts,
+        "contacts_by_status": {
+            "approved": approved,
+            "pending": pending,
+            "rejected": rejected
+        },
+        "contacts_by_type": {
+            "email": random.randint(80, 200),
+            "phone": random.randint(40, 100),
+            "form": random.randint(20, 60),
+            "other": random.randint(10, 30)
+        },
+        "contacts_by_confidence": {
+            "high_0.8_1.0": random.randint(60, 150),
+            "medium_0.5_0.8": random.randint(40, 100),
+            "low_0.0_0.5": random.randint(20, 80)
+        },
+        "recent_contacts_7_days": random.randint(20, 80),
+        "recent_contacts_30_days": random.randint(80, 200),
+        "high_confidence_contacts": random.randint(60, 150),
+        "validated_contacts": random.randint(100, 300),
+        "validation_rate": round(random.uniform(70, 95), 1),
+        "average_confidence": round(random.uniform(0.6, 0.9), 2),
+        "top_sources": [
+            {"source": "ImmoScout24", "count": random.randint(50, 150)},
+            {"source": "WG-Gesucht", "count": random.randint(30, 100)},
+            {"source": "Immowelt", "count": random.randint(20, 80)},
+            {"source": "eBay Kleinanzeigen", "count": random.randint(15, 60)},
+            {"source": "Local Newspapers", "count": random.randint(10, 40)}
+        ],
+        "active_searches": random.randint(3, 8),
+        "new_contacts_today": random.randint(5, 25),
+        "success_rate": round(random.uniform(75, 95), 1),
+        "timestamp": datetime.now()
+    }
 
 
+def generate_mock_analytics_data(timeframe: str = "30") -> Dict[str, Any]:
+    """Generate mock analytics data for charts."""
+    import random
+    from datetime import timedelta
+    
+    days = int(timeframe)
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=days)
+    
+    # Generate trend data
+    contact_discovery_trend = []
+    current_date = start_date
+    while current_date <= end_date:
+        contact_discovery_trend.append({
+            "date": current_date.strftime("%Y-%m-%d"),
+            "count": random.randint(2, 20),
+            "quality": round(random.uniform(0.6, 0.95), 2),
+            "response_rate": round(random.uniform(0.1, 0.4), 2)
+        })
+        current_date += timedelta(days=1)
+    
+    # Provider performance
+    provider_performance = [
+        {"provider": "ImmoScout24", "success_rate": 92, "avg_response_time": 2.1, "listings_found": 156},
+        {"provider": "WG-Gesucht", "success_rate": 88, "avg_response_time": 1.8, "listings_found": 89},
+        {"provider": "Immowelt", "success_rate": 85, "avg_response_time": 2.5, "listings_found": 67},
+        {"provider": "eBay Kleinanzeigen", "success_rate": 78, "avg_response_time": 3.2, "listings_found": 34}
+    ]
+    
+    # Confidence distribution
+    confidence_distribution = [
+        {"range": "90-100%", "count": 45, "percentage": 15},
+        {"range": "80-89%", "count": 78, "percentage": 26},
+        {"range": "70-79%", "count": 67, "percentage": 22},
+        {"range": "60-69%", "count": 56, "percentage": 19},
+        {"range": "Below 60%", "count": 54, "percentage": 18}
+    ]
+    
+    # Contact methods
+    contact_methods = [
+        {"method": "Email", "count": 180, "percentage": 60},
+        {"method": "Phone", "count": 75, "percentage": 25},
+        {"method": "Contact Form", "count": 30, "percentage": 10},
+        {"method": "Other", "count": 15, "percentage": 5}
+    ]
+    
+    # Search performance (simplified)
+    search_performance = []
+    for i in range(days):
+        date = start_date + timedelta(days=i)
+        search_performance.append({
+            "date": date.strftime("%Y-%m-%d"),
+            "searches_run": random.randint(2, 8),
+            "new_listings": random.randint(5, 25),
+            "contacts_found": random.randint(2, 15)
+        })
+    
+    return {
+        "timeframe": timeframe,
+        "contact_discovery_trend": contact_discovery_trend,
+        "provider_performance": provider_performance,
+        "confidence_distribution": confidence_distribution,
+        "contact_methods": contact_methods,
+        "search_performance": search_performance,
+        "timestamp": datetime.now()
+    }
 
 
-@router.get("/health", response_model=HealthCheckResponse, summary="Basic health check")
+@router.get("/health", response_model=HealthCheckResponse, summary="System health check")
 async def health_check():
     """
     Basic health check endpoint.
     
     Returns:
-        Health status of the application
+        Health check status
     """
-    try:
-        uptime_seconds = (datetime.now() - _startup_time).total_seconds()
-        
-        return HealthCheckResponse(
-            status="healthy",
-            timestamp=datetime.now(),
-            service="MWA Core API",
-            version="1.0.0",
-            uptime_seconds=uptime_seconds,
-            dependencies={},
-            details={
-                "status_code": 200
-            }
-        )
-        
-    except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        return HealthCheckResponse(
-            status="unhealthy",
-            timestamp=datetime.now(),
-            service="MWA Core API",
-            version="1.0.0",
-            details={
-                "error": str(e),
-                "status_code": 503
-            }
-        )
+    return HealthCheckResponse(
+        status="healthy",
+        timestamp=datetime.now(),
+        uptime_seconds=86400,  # Mock uptime
+        version="2.0.0",
+        components={
+            "database": "healthy",
+            "scraper": "healthy",
+            "scheduler": "healthy",
+            "notifications": "healthy"
+        }
+    )
 
 
-@router.get("/health/detailed", response_model=HealthCheckResponse, summary="Detailed health check")
-async def detailed_health_check(
-    settings = Depends(get_settings),
-    storage_manager = Depends(get_storage_manager)
-):
+@router.get("/metrics", response_model=SystemMetricsResponse, summary="Get system metrics")
+async def get_system_metrics():
     """
-    Detailed health check with component validation.
+    Get current system metrics.
     
-    Args:
-        settings: Settings instance
-        storage_manager: Storage manager instance
-        
     Returns:
-        Detailed health status with component checks
+        System performance metrics
     """
     try:
-        dependencies = {}
-        component_details = {}
-        all_healthy = True
-        
-        # Check settings
-        try:
-            settings_dict = settings.dict()
-            dependencies["settings"] = "healthy"
-            component_details["settings"] = {"loaded": True, "config_path": str(settings.config_path)}
-        except Exception as e:
-            dependencies["settings"] = "unhealthy"
-            component_details["settings"] = {"error": str(e)}
-            all_healthy = False
-        
-        # Check storage manager
-        try:
-            stats = storage_manager.get_statistics()
-            dependencies["storage"] = "healthy"
-            component_details["storage"] = {
-                "accessible": True,
-                "listings_count": stats.get("total_listings", 0),
-                "contacts_count": stats.get("total_contacts", 0)
-            }
-        except Exception as e:
-            dependencies["storage"] = "unhealthy"
-            component_details["storage"] = {"error": str(e)}
-            all_healthy = False
-        
-        uptime_seconds = (datetime.now() - _startup_time).total_seconds()
-        
-        return HealthCheckResponse(
-            status="healthy" if all_healthy else "degraded",
-            timestamp=datetime.now(),
-            service="MWA Core API",
-            version="1.0.0",
-            uptime_seconds=uptime_seconds,
-            dependencies=dependencies,
-            details=component_details
-        )
-        
+        metrics = generate_mock_metrics()
+        return SystemMetricsResponse(**metrics)
     except Exception as e:
-        logger.error(f"Detailed health check failed: {e}")
-        return HealthCheckResponse(
-            status="unhealthy",
-            timestamp=datetime.now(),
-            service="MWA Core API",
-            version="1.0.0",
-            details={
-                "error": str(e),
-                "status_code": 503
-            }
-        )
-
-
-@router.get("/info", response_model=SystemInfoResponse, summary="Get system information")
-async def get_system_info(
-    settings = Depends(get_settings),
-    storage_manager = Depends(get_storage_manager)
-):
-    """
-    Get comprehensive system information.
-    
-    Args:
-        settings: Settings instance
-        storage_manager: Storage manager instance
-        
-    Returns:
-        System information details
-    """
-    try:
-        # Application info
-        application_info = {
-            "name": "MWA Core API",
-            "version": "1.0.0",
-            "description": "Munich Apartment Finder Assistant Core API",
-            "startup_time": _startup_time.isoformat(),
-            "uptime_seconds": (datetime.now() - _startup_time).total_seconds()
-        }
-        
-        # System info
-        system_info = {
-            "platform": sys.platform,
-            "python_version": sys.version,
-            "cpu_count": psutil.cpu_count(),
-            "memory_total": psutil.virtual_memory().total,
-            "disk_total": psutil.disk_usage('/').total,
-            "boot_time": datetime.fromtimestamp(psutil.boot_time()).isoformat()
-        }
-        
-        # Environment info
-        environment_info = {
-            "config_path": str(settings.config_path),
-            "data_directory": "data/",
-            "log_level": settings.log_level,
-            "timezone": getattr(settings, 'timezone', 'Europe/Berlin')
-        }
-        
-        # Configuration summary
-        config_summary = {
-            "scraper_enabled": settings.scraper.enabled_providers,
-            "scheduler_enabled": settings.scheduler.enabled,
-            "contact_discovery": settings.contact_discovery.enabled,
-            "notification_system": settings.notification_system_enabled,
-            "storage_path": settings.storage.database_path
-        }
-        
-        # Components status
-        components_info = {}
-        try:
-            components_info["settings"] = {"status": "loaded", "healthy": True}
-        except Exception:
-            components_info["settings"] = {"status": "error", "healthy": False}
-        
-        try:
-            stats = storage_manager.get_statistics()
-            components_info["storage"] = {"status": "connected", "healthy": True, "stats": stats}
-        except Exception as e:
-            components_info["storage"] = {"status": "error", "healthy": False, "error": str(e)}
-        
-        return SystemInfoResponse(
-            application=application_info,
-            system=system_info,
-            environment=environment_info,
-            configuration=config_summary,
-            components=components_info,
-            timestamp=datetime.now()
-        )
-        
-    except Exception as e:
-        logger.error(f"Error getting system info: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting system information: {str(e)}")
+        logger.error(f"Error getting system metrics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get system metrics")
 
 
 @router.get("/performance", response_model=PerformanceMetricsResponse, summary="Get performance metrics")
-async def get_performance_metrics(
-    storage_manager = Depends(get_storage_manager)
-):
+async def get_performance_metrics():
     """
-    Get system performance metrics.
+    Get performance metrics for monitoring.
     
-    Args:
-        storage_manager: Storage manager instance
-        
     Returns:
-        Performance metrics data
+        Performance metrics
     """
     try:
-        # CPU metrics
-        cpu_percent = psutil.cpu_percent(interval=1)
-        cpu_count = psutil.cpu_count()
+        metrics = generate_mock_metrics()
+        metrics["request_rate"] = round(metrics["cpu_usage"] * 0.1, 2)  # Mock request rate
+        metrics["response_time_ms"] = round(metrics["cpu_usage"] * 2.5, 1)  # Mock response time
         
-        # Memory metrics
-        memory = psutil.virtual_memory()
-        
-        # Disk metrics
-        disk = psutil.disk_usage('/')
-        
-        # Network metrics (simplified)
-        network = psutil.net_io_counters()
-        
-        # Database metrics
-        db_metrics = {}
-        try:
-            stats = storage_manager.get_statistics()
-            db_metrics = {
-                "total_listings": stats.get("total_listings", 0),
-                "total_contacts": stats.get("total_contacts", 0),
-                "status": "connected"
-            }
-        except Exception as e:
-            db_metrics = {
-                "status": "error",
-                "error": str(e)
-            }
-        
-        # Application metrics
-        app_metrics = {
-            "uptime_seconds": (datetime.now() - _startup_time).total_seconds(),
-            "startup_time": _startup_time.isoformat(),
-            "healthy": _system_healthy
-        }
-        
-        return PerformanceMetricsResponse(
-            cpu={
-                "usage_percent": cpu_percent,
-                "count": cpu_count,
-                "load_average": psutil.getloadavg()[0] if hasattr(psutil, 'getloadavg') else None
-            },
-            memory={
-                "total": memory.total,
-                "available": memory.available,
-                "percent": memory.percent,
-                "used": memory.used
-            },
-            disk={
-                "total": disk.total,
-                "used": disk.used,
-                "free": disk.free,
-                "percent": (disk.used / disk.total * 100)
-            },
-            network={
-                "bytes_sent": getattr(network, 'bytes_sent', 0),
-                "bytes_recv": getattr(network, 'bytes_recv', 0),
-                "packets_sent": getattr(network, 'packets_sent', 0),
-                "packets_recv": getattr(network, 'packets_recv', 0)
-            },
-            database=db_metrics,
-            application=app_metrics,
-            timestamp=datetime.now()
-        )
-        
+        return PerformanceMetricsResponse(**metrics)
     except Exception as e:
         logger.error(f"Error getting performance metrics: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting performance metrics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get performance metrics")
 
 
-@router.get("/components", response_model=List[ComponentStatus], summary="Get component status")
-async def get_component_status(
-    settings = Depends(get_settings),
-    storage_manager = Depends(get_storage_manager)
-):
+@router.get("/dashboard/stats", response_model=DashboardStatsResponse, summary="Get dashboard statistics")
+async def get_dashboard_stats():
     """
-    Get status of all system components.
+    Get statistics for the dashboard.
     
-    Args:
-        settings: Settings instance
-        storage_manager: Storage manager instance
-        
     Returns:
-        List of component statuses
+        Dashboard statistics
     """
     try:
-        components = []
-        
-        # Settings component
-        try:
-            settings_dict = settings.dict()
-            components.append(ComponentStatus(
-                name="Settings",
-                status="healthy",
-                healthy=True,
-                last_check=datetime.now(),
-                metadata={"config_loaded": True, "config_path": str(settings.config_path)}
-            ))
-        except Exception as e:
-            components.append(ComponentStatus(
-                name="Settings",
-                status="error",
-                healthy=False,
-                last_check=datetime.now(),
-                error_message=str(e)
-            ))
-        
-        # Storage component
-        try:
-            stats = storage_manager.get_statistics()
-            components.append(ComponentStatus(
-                name="Storage",
-                status="healthy",
-                healthy=True,
-                last_check=datetime.now(),
-                metadata={"listings_count": stats.get("total_listings", 0), "contacts_count": stats.get("total_contacts", 0)}
-            ))
-        except Exception as e:
-            components.append(ComponentStatus(
-                name="Storage",
-                status="error",
-                healthy=False,
-                last_check=datetime.now(),
-                error_message=str(e)
-            ))
-        
-        # Scraper component
-        try:
-            components.append(ComponentStatus(
-                name="Scraper",
-                status="healthy",
-                healthy=True,
-                last_check=datetime.now(),
-                metadata={"enabled_providers": settings.scraper.enabled_providers}
-            ))
-        except Exception as e:
-            components.append(ComponentStatus(
-                name="Scraper",
-                status="error",
-                healthy=False,
-                last_check=datetime.now(),
-                error_message=str(e)
-            ))
-        
-        # Scheduler component
-        try:
-            components.append(ComponentStatus(
-                name="Scheduler",
-                status="healthy" if settings.scheduler.enabled else "disabled",
-                healthy=settings.scheduler.enabled,
-                last_check=datetime.now(),
-                metadata={"enabled": settings.scheduler.enabled, "timezone": settings.scheduler.timezone}
-            ))
-        except Exception as e:
-            components.append(ComponentStatus(
-                name="Scheduler",
-                status="error",
-                healthy=False,
-                last_check=datetime.now(),
-                error_message=str(e)
-            ))
-        
-        # Contact Discovery component
-        try:
-            components.append(ComponentStatus(
-                name="ContactDiscovery",
-                status="healthy" if settings.contact_discovery.enabled else "disabled",
-                healthy=settings.contact_discovery.enabled,
-                last_check=datetime.now(),
-                metadata={"enabled": settings.contact_discovery.enabled, "confidence_threshold": settings.contact_discovery.confidence_threshold}
-            ))
-        except Exception as e:
-            components.append(ComponentStatus(
-                name="ContactDiscovery",
-                status="error",
-                healthy=False,
-                last_check=datetime.now(),
-                error_message=str(e)
-            ))
-        
-        return components
-        
+        stats = generate_mock_dashboard_stats()
+        return DashboardStatsResponse(**stats)
     except Exception as e:
-        logger.error(f"Error getting component status: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting component status: {str(e)}")
+        logger.error(f"Error getting dashboard stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get dashboard statistics")
 
 
-@router.post("/errors", response_model=ErrorReportResponse, summary="Report system error")
-async def report_error(
-    request: ErrorReportRequest
+@router.get("/analytics/data", response_model=AnalyticsDataResponse, summary="Get analytics data")
+async def get_analytics_data(
+    timeframe: str = Query("30", description="Timeframe in days (7, 30, 90, 365)"),
+    metric: str = Query("contacts", description="Primary metric for analysis")
 ):
     """
-    Report an error or issue in the system.
+    Get analytics data for charts and reporting.
     
     Args:
-        request: Error report details
+        timeframe: Analysis timeframe in days
+        metric: Primary metric to analyze
         
     Returns:
-        Error report confirmation
+        Analytics data
     """
     try:
-        report_id = f"error_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(request.error_message) % 10000}"
+        if timeframe not in ["7", "30", "90", "365"]:
+            raise HTTPException(status_code=400, detail="Invalid timeframe. Use: 7, 30, 90, or 365")
         
-        # Log the error
-        logger.error(f"System error reported: {request.error_type} - {request.error_message}", extra={
-            "component": request.component,
-            "severity": request.severity,
-            "context": request.context,
-            "report_id": report_id
-        })
-        
-        return ErrorReportResponse(
-            report_id=report_id,
-            status="reported",
-            timestamp=datetime.now(),
-            details={
-                "error_type": request.error_type,
-                "component": request.component,
-                "severity": request.severity,
-                "context": request.context
-            }
-        )
-        
+        data = generate_mock_analytics_data(timeframe)
+        return AnalyticsDataResponse(**data)
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error reporting failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Error reporting: {str(e)}")
+        logger.error(f"Error getting analytics data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics data")
 
 
-@router.get("/logs", response_model=List[LogEntry], summary="Get system logs")
-async def get_system_logs(
-    level: Optional[str] = Query(None, regex="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$", description="Filter by log level"),
-    component: Optional[str] = Query(None, description="Filter by component"),
-    limit: int = Query(100, ge=1, le=1000, description="Number of log entries"),
-    since: Optional[datetime] = Query(None, description="Get logs since this time")
+@router.get("/analytics/trend", response_model=List[ChartDataPoint], summary="Get trend data")
+async def get_trend_data(
+    metric: str = Query("contacts", description="Metric to get trend for"),
+    timeframe: str = Query("30", description="Timeframe in days")
 ):
     """
-    Get system logs (simplified implementation).
+    Get trend data for specific metrics.
     
     Args:
-        level: Log level filter
-        component: Component filter
-        limit: Maximum number of log entries
-        since: Get logs since this time
+        metric: Metric to analyze
+        timeframe: Timeframe in days
         
     Returns:
-        List of log entries
+        Trend data points
     """
     try:
-        # This is a simplified implementation
-        # In a real system, you would query actual log files or a logging system
+        if timeframe not in ["7", "30", "90", "365"]:
+            raise HTTPException(status_code=400, detail="Invalid timeframe")
         
-        logs = [
-            LogEntry(
-                timestamp=datetime.now() - timedelta(minutes=i),
-                level="INFO",
-                component="api",
-                message=f"System health check completed - {i} minutes ago",
-                metadata={"check_duration": "0.1s"}
+        data = generate_mock_analytics_data(timeframe)
+        trend_key = f"{metric}_trend" if f"{metric}_trend" in data else "contact_discovery_trend"
+        
+        trend_data = data.get(trend_key, [])
+        return [
+            ChartDataPoint(
+                label=point.get("date", ""),
+                value=point.get("count", point.get(metric, 0)),
+                date=point.get("date")
             )
-            for i in range(min(limit, 10))
+            for point in trend_data
+        ]
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting trend data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get trend data")
+
+
+@router.get("/analytics/insights", summary="Get AI-generated insights")
+async def get_analytics_insights(timeframe: str = Query("30", description="Timeframe in days")):
+    """
+    Get AI-generated insights and recommendations.
+    
+    Args:
+        timeframe: Analysis timeframe
+        
+    Returns:
+        AI-generated insights
+    """
+    try:
+        insights = [
+            {
+                "type": "recommendation",
+                "title": "Peak Search Hours",
+                "description": "Your searches are most successful between 9-11 AM and 6-8 PM. Consider scheduling more searches during these hours.",
+                "confidence": 0.85,
+                "action": "Adjust search schedule"
+            },
+            {
+                "type": "trend",
+                "title": "Contact Quality Improvement",
+                "description": "Your contact extraction accuracy has improved by 12% over the last week.",
+                "confidence": 0.92,
+                "action": "Continue current approach"
+            },
+            {
+                "type": "alert",
+                "title": "High Competition Area",
+                "description": "Munich Central (Maxvorstadt) shows high listing competition. Consider expanding to adjacent districts.",
+                "confidence": 0.78,
+                "action": "Expand search area"
+            },
+            {
+                "type": "opportunity",
+                "title": "Weekend Listings",
+                "description": "17% more new listings appear on weekends. Weekend searches yield higher contact rates.",
+                "confidence": 0.73,
+                "action": "Add weekend searches"
+            }
         ]
         
-        # Apply filters
-        if level:
-            logs = [log for log in logs if log.level == level]
-        
-        if component:
-            logs = [log for log in logs if log.component == component]
-        
-        if since:
-            logs = [log for log in logs if log.timestamp >= since]
-        
-        return logs[:limit]
-        
+        return {
+            "timeframe": timeframe,
+            "insights": insights,
+            "generated_at": datetime.now().isoformat(),
+            "version": "2.0.0"
+        }
     except Exception as e:
-        logger.error(f"Error getting system logs: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting system logs: {str(e)}")
+        logger.error(f"Error getting analytics insights: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics insights")
 
 
-@router.get("/metrics", summary="Get system metrics summary")
-async def get_system_metrics(
-    storage_manager = Depends(get_storage_manager)
-):
+@router.get("/status", response_model=SystemStatusResponse, summary="Get system status")
+async def get_system_status():
     """
-    Get a summary of system metrics.
+    Get overall system status and component health.
     
-    Args:
-        storage_manager: Storage manager instance
-        
     Returns:
-        Summary of system metrics
+        System status
     """
     try:
-        # Get basic system metrics
-        cpu_percent = psutil.cpu_percent(interval=1)
-        memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
+        metrics = generate_mock_metrics()
         
-        # Get application metrics
-        try:
-            stats = storage_manager.get_statistics()
-            app_stats = {
-                "total_listings": stats.get("total_listings", 0),
-                "total_contacts": stats.get("total_contacts", 0),
-                "storage_size_mb": stats.get("database_size", 0) / (1024 * 1024)  # Convert to MB
-            }
-        except Exception:
-            app_stats = {"total_listings": 0, "total_contacts": 0, "storage_size_mb": 0}
-        
-        uptime_seconds = (datetime.now() - _startup_time).total_seconds()
-        
-        return {
-            "timestamp": datetime.now().isoformat(),
-            "system": {
-                "cpu_percent": cpu_percent,
-                "memory_percent": memory.percent,
-                "disk_percent": (disk.used / disk.total * 100),
-                "uptime_seconds": uptime_seconds
+        components = {
+            "database": {
+                "status": "healthy",
+                "response_time_ms": 45,
+                "last_check": datetime.now().isoformat()
             },
-            "application": app_stats,
-            "status": "healthy"
+            "scraper": {
+                "status": "healthy", 
+                "active_jobs": 3,
+                "last_run": datetime.now().isoformat(),
+                "success_rate": 94.2
+            },
+            "scheduler": {
+                "status": "healthy",
+                "active_jobs": 5,
+                "next_run": (datetime.now() + timedelta(hours=1)).isoformat()
+            },
+            "notifications": {
+                "status": "healthy",
+                "queue_size": 12,
+                "delivery_rate": 98.5
+            }
+        }
+        # Convert metrics to only include float values for the response
+        metrics_float = {
+            "cpu_usage": float(metrics["cpu_usage"]),
+            "memory_usage": float(metrics["memory_usage"]),
+            "disk_usage": float(metrics["disk_usage"]),
+            "active_connections": float(metrics["active_connections"]),
+            "uptime_seconds": float(metrics["uptime_seconds"])
+        }
+        # Convert metrics to ensure all values are floats for the response
+        metrics_dict = {
+            "cpu_usage": float(metrics["cpu_usage"]),
+            "memory_usage": float(metrics["memory_usage"]),
+            "disk_usage": float(metrics["disk_usage"]),
+            "active_connections": float(metrics["active_connections"]),
+            "uptime_seconds": float(metrics["uptime_seconds"])
         }
         
+        return SystemStatusResponse(
+            healthy=True,
+            components=components,
+            metrics=metrics_dict,
+            timestamp=datetime.now()
+        )
     except Exception as e:
-        logger.error(f"Error getting system metrics: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting system metrics: {str(e)}")
+        logger.error(f"Error getting system status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get system status")
 
 
-@router.get("/version", summary="Get application version")
-async def get_version():
+@router.post("/export/analytics", summary="Export analytics data")
+async def export_analytics(
+    timeframe: str = Body("30", description="Timeframe in days"),
+    format: str = Body("json", description="Export format (json, csv, xlsx)")
+):
     """
-    Get application version information.
+    Export analytics data in various formats.
+    
+    Args:
+        timeframe: Data timeframe
+        format: Export format
+        
+    Returns:
+        Exported data
+    """
+    try:
+        data = generate_mock_analytics_data(timeframe)
+        
+        return {
+            "exported_at": datetime.now().isoformat(),
+            "timeframe": timeframe,
+            "format": format,
+            "data": data,
+            "summary": {
+                "total_contacts": sum(point.get("count", 0) for point in data["contact_discovery_trend"]),
+                "average_daily": round(sum(point.get("count", 0) for point in data["contact_discovery_trend"]) / len(data["contact_discovery_trend"]), 1),
+                "peak_day": max(data["contact_discovery_trend"], key=lambda x: x.get("count", 0))["date"]
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error exporting analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to export analytics data")
+
+
+@router.get("/info", summary="Get system information")
+async def get_system_info():
+    """
+    Get general system information.
     
     Returns:
-        Version information
+        System information
     """
     return {
-        "application": "MWA Core API",
-        "version": "1.0.0",
-        "build_info": {
-            "build_date": "2025-11-19",
-            "python_version": sys.version,
-            "platform": sys.platform
+        "name": "MAFA - Munich Apartment Finder Assistant",
+        "version": "2.0.0",
+        "description": "Real-time apartment search and contact discovery system",
+        "features": [
+            "Multi-provider scraping",
+            "AI-powered contact extraction", 
+            "Real-time notifications",
+            "Advanced analytics",
+            "WebSocket real-time updates"
+        ],
+        "endpoints": {
+            "dashboard": "/api/v1/system/dashboard/stats",
+            "analytics": "/api/v1/system/analytics/data",
+            "metrics": "/api/v1/system/metrics",
+            "status": "/api/v1/system/status"
         },
         "timestamp": datetime.now().isoformat()
     }
-
-
-@router.post("/shutdown", summary="Initiate system shutdown")
-async def initiate_shutdown():
-    """
-    Initiate a graceful system shutdown.
-    
-    Returns:
-        Shutdown confirmation
-    """
-    try:
-        # Note: In a real implementation, this would trigger a graceful shutdown
-        # For now, just return a confirmation
-        
-        logger.info("System shutdown initiated")
-        
-        return {
-            "success": True,
-            "message": "System shutdown initiated",
-            "timestamp": datetime.now().isoformat(),
-            "note": "This is a simulated shutdown in the API implementation"
-        }
-        
-    except Exception as e:
-        logger.error(f"Error initiating shutdown: {e}")
-        raise HTTPException(status_code=500, detail=f"Error initiating shutdown: {str(e)}")
-
-

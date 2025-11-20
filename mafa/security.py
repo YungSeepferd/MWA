@@ -136,6 +136,31 @@ class SecurityValidator:
             return False
     
     @classmethod
+    def _is_discord_webhook_url(cls, url: str) -> bool:
+        """
+        Check if URL is a valid Discord webhook URL.
+        
+        Args:
+            url: URL string to check
+            
+        Returns:
+            True if URL is a valid Discord webhook URL, False otherwise
+        """
+        try:
+            parsed = urlparse(url)
+            # Check if hostname is exactly discord.com or discordapp.com
+            if parsed.hostname not in ['discord.com', 'discordapp.com', 'www.discord.com', 'www.discordapp.com']:
+                return False
+            
+            # Check if path starts with /api/webhooks/
+            if not parsed.path.startswith('/api/webhooks/'):
+                return False
+            
+            return True
+        except Exception:
+            return False
+    
+    @classmethod
     def validate_file_path(cls, file_path: Path, base_dir: Optional[Path] = None) -> bool:
         """
         Validate that a file path is safe and within allowed directories.
@@ -255,7 +280,7 @@ class SecurityValidator:
                 # Sanitize Discord webhook URL
                 if 'discord_webhook_url' in notification:
                     webhook_url = notification['discord_webhook_url']
-                    if cls.validate_url(webhook_url) and 'discord.com' in webhook_url:
+                    if cls.validate_url(webhook_url) and cls._is_discord_webhook_url(webhook_url):
                         sanitized['notification']['discord_webhook_url'] = webhook_url
                 
                 # Sanitize Telegram settings

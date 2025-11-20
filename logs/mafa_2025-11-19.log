@@ -1,0 +1,41 @@
+2025-11-19 15:10:49 | INFO | mafa.orchestrator:run:111 | Starting MAFA orchestrator run (DRY-RUN)...
+2025-11-19 15:10:49 | INFO | mafa.orchestrator:run:114 | DRY-RUN MODE: No database persistence, no notifications will be performed
+2025-11-19 15:10:49 | INFO | mafa.orchestrator:run:122 | System health status: healthy
+2025-11-19 15:10:49 | ERROR | mafa.orchestrator:run:134 | Failed to load configuration: 3 validation errors for Settings
+personal_profile
+  field required (type=value_error.missing)
+search_criteria
+  field required (type=value_error.missing)
+notification
+  field required (type=value_error.missing)
+2025-11-19 15:10:49 | ERROR | mafa.orchestrator:run:322 | Application error: Configuration loading failed: 3 validation errors for Settings
+personal_profile
+  field required (type=value_error.missing)
+search_criteria
+  field required (type=value_error.missing)
+notification
+  field required (type=value_error.missing)
+2025-11-19 15:11:45 | INFO | mafa.orchestrator:run:111 | Starting MAFA orchestrator run (DRY-RUN)...
+2025-11-19 15:11:45 | INFO | mafa.orchestrator:run:114 | DRY-RUN MODE: No database persistence, no notifications will be performed
+2025-11-19 15:11:45 | INFO | mafa.orchestrator:run:122 | System health status: healthy
+2025-11-19 15:11:45 | INFO | mafa.orchestrator:run:132 | Configuration loaded successfully
+2025-11-19 15:11:45 | INFO | mafa.orchestrator:run:153 | DRY-RUN: Skipping database initialization
+2025-11-19 15:11:45 | INFO | mafa.orchestrator:run:161 | Built 2 providers: ['ImmoScoutProvider', 'WGGesuchtProvider']
+2025-11-19 15:11:45 | INFO | mafa.orchestrator:run:170 | Starting scrape for ImmoScoutProvider
+2025-11-19 15:11:56 | ERROR | mafa.orchestrator:run:197 | Failed to scrape ImmoScoutProvider: [ImmoScout] Failed to scrape after 3 attempts
+2025-11-19 15:11:56 | INFO | mafa.orchestrator:run:170 | Starting scrape for WGGesuchtProvider
+2025-11-19 15:12:07 | ERROR | mafa.orchestrator:run:197 | Failed to scrape WGGesuchtProvider: [WG-Gesucht] Failed to scrape after 3 attempts
+2025-11-19 15:12:07 | INFO | mafa.orchestrator:run:210 | Total scraped listings: 0 from 2 providers
+2025-11-19 15:12:07 | WARNING | mafa.orchestrator:run:214 | All providers failed. Errors: Failed to scrape ImmoScoutProvider: [ImmoScout] Failed to scrape after 3 attempts; Failed to scrape WGGesuchtProvider: [WG-Gesucht] Failed to scrape after 3 attempts
+2025-11-19 15:23:06 | INFO | mafa.orchestrator:run:111 | Starting MAFA orchestrator run (DRY-RUN)...
+2025-11-19 15:23:06 | INFO | mafa.orchestrator:run:114 | DRY-RUN MODE: No database persistence, no notifications will be performed
+2025-11-19 15:23:06 | INFO | mafa.orchestrator:run:122 | System health status: healthy
+2025-11-19 15:23:06 | INFO | mafa.orchestrator:run:132 | Configuration loaded successfully
+2025-11-19 15:23:06 | INFO | mafa.orchestrator:run:153 | DRY-RUN: Skipping database initialization
+2025-11-19 15:23:06 | INFO | mafa.orchestrator:run:161 | Built 2 providers: ['ImmoScoutProvider', 'WGGesuchtProvider']
+2025-11-19 15:23:06 | INFO | mafa.orchestrator:run:170 | Starting scrape for ImmoScoutProvider
+2025-11-19 15:23:17 | ERROR | mafa.orchestrator:run:197 | Failed to scrape ImmoScoutProvider: [ImmoScout] Failed to scrape after 3 attempts
+2025-11-19 15:23:17 | INFO | mafa.orchestrator:run:170 | Starting scrape for WGGesuchtProvider
+2025-11-19 15:23:27 | ERROR | mafa.orchestrator:run:197 | Failed to scrape WGGesuchtProvider: [WG-Gesucht] Failed to scrape after 3 attempts
+2025-11-19 15:23:27 | INFO | mafa.orchestrator:run:210 | Total scraped listings: 0 from 2 providers
+2025-11-19 15:23:27 | WARNING | mafa.orchestrator:run:214 | All providers failed. Errors: Failed to scrape ImmoScoutProvider: [ImmoScout] Failed to scrape after 3 attempts; Failed to scrape WGGesuchtProvider: [WG-Gesucht] Failed to scrape after 3 attempts

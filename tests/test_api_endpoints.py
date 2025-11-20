@@ -27,7 +27,7 @@ import httpx
 # Import API components
 from api.main import app
 from api.auth import authenticate_user, create_access_token
-from api.websocket.manager import websocket_manager, MessageType
+from api.ws.manager import websocket_manager, MessageType
 from api.middleware.rate_limiter import RateLimitConfig
 from mwa_core.config.settings import get_settings
 

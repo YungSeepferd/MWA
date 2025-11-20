@@ -1,0 +1,445 @@
+name: Documentation Quality Assurance
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - 'scripts/validate-docs.sh'
+      - 'scripts/check-links.sh'
+      - 'scripts/validate-structure.sh'
+      - 'scripts/lint-docs.sh'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - 'scripts/validate-docs.sh'
+      - 'scripts/check-links.sh'
+      - 'scripts/validate-structure.sh'
+      - 'scripts/lint-docs.sh'
+  schedule:
+    # Run weekly documentation quality check
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  docs-validation:
+    name: Documentation Validation
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule' || github.repository == github.event.repository
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for proper link validation
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl bc jq
+    
+    - name: Install markdownlint CLI
+      run: |
+        npm install -g markdownlint-cli
+        npm install -g markdown-link-check
+      continue-on-error: true
+    
+    - name: Make scripts executable
+      run: |
+        chmod +x scripts/validate-docs.sh
+        chmod +x scripts/check-links.sh
+        chmod +x scripts/validate-structure.sh
+        chmod +x scripts/lint-docs.sh
+    
+    - name: Run comprehensive documentation validation
+      id: validate-docs
+      run: |
+        echo "=== Running Documentation Validation ==="
+        ./scripts/validate-docs.sh --format console
+      continue-on-error: true
+    
+    - name: Run documentation structure validation
+      id: validate-structure
+      run: |
+        echo "=== Running Structure Validation ==="
+        ./scripts/validate-structure.sh --tolerance lenient --format console
+      continue-on-error: true
+    
+    - name: Run link validation
+      id: check-links
+      run: |
+        echo "=== Running Link Validation ==="
+        ./scripts/check-links.sh --format console --timeout 5
+      continue-on-error: true
+    
+    - name: Run documentation linting
+      id: lint-docs
+      run: |
+        echo "=== Running Documentation Linting ==="
+        ./scripts/lint-docs.sh --format console
+      continue-on-error: true
+    
+    - name: Generate validation reports
+      if: always()
+      run: |
+        echo "=== Generating Reports ==="
+        mkdir -p docs/reports
+        
+        # Generate comprehensive validation report
+        ./scripts/validate-docs.sh --format json --report docs/reports/validation-report.json
+        ./scripts/validate-structure.sh --format json --report docs/reports/structure-report.json
+        ./scripts/check-links.sh --format json --report docs/reports/links-report.json
+        ./scripts/lint-docs.sh --format json --report docs/reports/lint-report.json
+        
+        # Create summary report
+        cat > docs/reports/summary.md << 'EOF'
+        # Documentation Quality Report
+        
+        Generated on: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        
+        ## Validation Results
+        
+        - **Structure Validation**: ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }}
+        - **Link Validation**: ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }}
+        - **Documentation Linting**: ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }}
+        - **Overall Status**: ${{ job.status == 'success' && '✅ All Checks Passed' || '❌ Some Checks Failed' }}
+        
+        ## Reports
+        
+        - [Structure Report](structure-report.json)
+        - [Link Report](links-report.json)
+        - [Lint Report](lint-report.json)
+        - [Validation Report](validation-report.json)
+        
+        EOF
+    
+    - name: Upload validation reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-reports
+        path: docs/reports/
+        retention-days: 30
+    
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          let comment = '## 📋 Documentation Quality Report\n\n';
+          
+          // Read summary if available
+          try {
+            const summaryPath = 'docs/reports/summary.md';
+            if (fs.existsSync(summaryPath)) {
+              const summary = fs.readFileSync(summaryPath, 'utf8');
+              comment += summary + '\n\n';
+            }
+          } catch (error) {
+            console.log('Could not read summary:', error.message);
+          }
+          
+          // Add individual job results
+          const jobs = [
+            { name: 'Documentation Validation', id: 'validate-docs' },
+            { name: 'Structure Validation', id: 'validate-structure' },
+            { name: 'Link Validation', id: 'check-links' },
+            { name: 'Documentation Linting', id: 'lint-docs' }
+          ];
+          
+          comment += '### Job Results\n\n';
+          jobs.forEach(job => {
+            const result = context.payload.check_suite?.conclusion || 'unknown';
+            const emoji = result === 'success' ? '✅' : '❌';
+            comment += `- ${emoji} **${job.name}**: ${result}\n`;
+          });
+          
+          comment += '\n---\n';
+          comment += '*This report was automatically generated by the Documentation QA workflow*';
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  docs-links-external:
+    name: External Link Validation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || contains(github.event.head_commit.modified, 'docs/')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Make link checker executable
+      run: chmod +x scripts/check-links.sh
+    
+    - name: Check external links
+      id: external-links
+      run: |
+        echo "=== Checking External Links ==="
+        ./scripts/check-links.sh --format json --report external-links-report.json
+      continue-on-error: true
+    
+    - name: Upload external link report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: external-links-report
+        path: external-links-report.json
+        retention-days: 7
+
+  docs-metrics:
+    name: Documentation Metrics
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Calculate documentation metrics
+      id: metrics
+      run: |
+        echo "=== Calculating Documentation Metrics ==="
+        
+        # Count markdown files
+        md_files=$(find docs -name "*.md" -type f | wc -l)
+        echo "markdown_files=$md_files" >> $GITHUB_OUTPUT
+        
+        # Count total lines
+        total_lines=$(find docs -name "*.md" -type f -exec wc -l {} + | tail -1 | awk '{print $1}')
+        echo "total_lines=$total_lines" >> $GITHUB_OUTPUT
+        
+        # Count words (approximate)
+        total_words=$(find docs -name "*.md" -type f -exec wc -w {} + | tail -1 | awk '{print $1}')
+        echo "total_words=$total_words" >> $GITHUB_OUTPUT
+        
+        # Count directories
+        doc_dirs=$(find docs -type d | wc -l)
+        echo "documentation_directories=$doc_dirs" >> $GITHUB_OUTPUT
+        
+        echo "📊 Documentation Metrics:"
+        echo "  - Markdown files: $md_files"
+        echo "  - Total lines: $total_lines"
+        echo "  - Total words: $total_words"
+        echo "  - Directories: $doc_dirs"
+    
+    - name: Generate metrics report
+      run: |
+        cat > docs/metrics.json << EOF
+        {
+          "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+          "repository": "${{ github.repository }}",
+          "commit": "${{ github.sha }}",
+          "metrics": {
+            "markdown_files": ${{ steps.metrics.outputs.markdown_files }},
+            "total_lines": ${{ steps.metrics.outputs.total_lines }},
+            "total_words": ${{ steps.metrics.outputs.total_words }},
+            "documentation_directories": ${{ steps.metrics.outputs.documentation_directories }}
+          }
+        }
+        EOF
+    
+    - name: Upload metrics
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-metrics
+        path: docs/metrics.json
+        retention-days: 90
+
+  docs-coverage:
+    name: Documentation Coverage Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Analyze documentation coverage
+      id: coverage
+      run: |
+        echo "=== Analyzing Documentation Coverage ==="
+        
+        # Define expected documentation areas
+        declare -A areas=(
+          ["getting-started"]="Quick start, Installation, Configuration"
+          ["user-guide"]="User workflows, Dashboard, Setup wizard, Troubleshooting"
+          ["developer-guide"]="Contributing, Development setup, API integration, Testing"
+          ["architecture"]="System overview, Repository structure, Data models"
+          ["operations"]="Deployment, Monitoring, Backup & restore, Security"
+          ["project"]="Roadmap, Changelog, Release notes, Governance"
+        )
+        
+        echo "## Documentation Coverage Analysis" > coverage-report.md
+        echo "" >> coverage-report.md
+        echo "Generated: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> coverage-report.md
+        echo "" >> coverage-report.md
+        
+        total_score=0
+        max_score=0
+        
+        for area in "${!areas[@]}"; do
+          echo "### $area" >> coverage-report.md
+          echo "Expected: ${areas[$area]}" >> coverage-report.md
+          
+          # Check if directory exists
+          if [[ -d "docs/$area" ]]; then
+            file_count=$(find "docs/$area" -name "*.md" | wc -l)
+            echo "Status: ✅ Present ($file_count files)" >> coverage-report.md
+            score=100
+          else
+            echo "Status: ❌ Missing" >> coverage-report.md
+            score=0
+          fi
+          
+          total_score=$((total_score + score))
+          max_score=$((max_score + 100))
+          echo "" >> coverage-report.md
+        done
+        
+        coverage_percentage=$((total_score * 100 / max_score))
+        echo "## Overall Coverage: $coverage_percentage%" >> coverage-report.md
+        
+        if [[ $coverage_percentage -ge 80 ]]; then
+          echo "🎉 **Excellent documentation coverage!**" >> coverage-report.md
+        elif [[ $coverage_percentage -ge 60 ]]; then
+          echo "👍 **Good documentation coverage**" >> coverage-report.md
+        else
+          echo "⚠️ **Documentation coverage needs improvement**" >> coverage-report.md
+        fi
+    
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-coverage
+        path: coverage-report.md
+        retention-days: 30
+    
+    - name: Comment coverage on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          try {
+            const coverage = fs.readFileSync('coverage-report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📊 Documentation Coverage\n\n${coverage}`
+            });
+          } catch (error) {
+            console.log('Could not post coverage comment:', error.message);
+          }
+
+  docs-notification:
+    name: Documentation Status Notification
+    runs-on: ubuntu-latest
+    needs: [docs-validation, docs-links-external, docs-coverage]
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'push')
+    
+    steps:
+    - name: Determine overall status
+      id: status
+      run: |
+        if [[ "${{ needs.docs-validation.result }}" == "success" ]] && \
+           [[ "${{ needs.docs-links-external.result }}" != "failure" ]] && \
+           [[ "${{ needs.docs-coverage.result }}" == "success" ]]; then
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "emoji=✅" >> $GITHUB_OUTPUT
+          echo "message=All documentation checks passed" >> $GITHUB_OUTPUT
+        else
+          echo "status=failure" >> $GITHUB_OUTPUT
+          echo "emoji=❌" >> $GITHUB_OUTPUT
+          echo "message=Some documentation checks failed" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Create documentation status summary
+      run: |
+        cat > status-summary.md << EOF
+        # Documentation Quality Summary
+        
+        **Status**: ${{ steps.status.outputs.emoji }} ${{ steps.status.outputs.message }}
+        
+        **Repository**: ${{ github.repository }}
+        **Commit**: \`${{ github.sha }}\`
+        **Timestamp**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        
+        ## Check Results
+        
+        - **Validation**: ${{ needs.docs-validation.result == 'success' && '✅' || '❌' }}
+        - **External Links**: ${{ needs.docs-links-external.result == 'success' && '✅' || (needs.docs-links-external.result == 'skipped' && '⏭️' || '❌') }}
+        - **Coverage**: ${{ needs.docs-coverage.result == 'success' && '✅' || '❌' }}
+        
+        ## Quick Actions
+        
+        - [View Reports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        - [Documentation](docs/)
+        
+        ---
+        *Generated automatically by Documentation QA workflow*
+        EOF
+    
+    - name: Upload status summary
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-status
+        path: status-summary.md
+        retention-days: 7
+    
+    - name: Create issue on failure
+      if: steps.status.outputs.status == 'failure' && github.event_name == 'schedule'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const title = `🚨 Documentation Quality Issues - ${new Date().toISOString().split('T')[0]}`;
+          const body = `
+          Automated documentation quality check found issues:
+          
+          **Repository**: ${{ github.repository }}
+          **Commit**: \`${{ github.sha }}\`
+          
+          ## Issues Found
+          
+          Please review the documentation validation reports and fix the identified issues.
+          
+          [View Reports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          
+          ---
+          *This issue was automatically created by the Documentation QA workflow*
+          `;
+          
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: ['documentation', 'quality', 'automated']
+          });

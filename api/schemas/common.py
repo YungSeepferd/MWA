@@ -292,14 +292,14 @@ class ListingFilter(BaseFilter):
 # Export/Import Models
 class ExportRequest(BaseModel):
     """Standard export request parameters."""
-    format: str = Field("json", regex="^(json|csv|xlsx)$", description="Export format")
+    format: str = Field("json", pattern="^(json|csv|xlsx)$", description="Export format")
     include_metadata: bool = Field(True, description="Include metadata in export")
     filters: Optional[Dict[str, Any]] = Field(None, description="Export filters")
 
 
 class ImportRequest(BaseModel):
     """Standard import request parameters."""
-    merge_strategy: str = Field("replace", regex="^(replace|merge)$", description="How to handle existing data")
+    merge_strategy: str = Field("replace", pattern="^(replace|merge)$", description="How to handle existing data")
     validate_before_import: bool = Field(True, description="Validate data before importing")
     backup_current: bool = Field(True, description="Create backup before importing")
 

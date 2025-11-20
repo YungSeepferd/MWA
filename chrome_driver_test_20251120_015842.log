@@ -1,0 +1,150 @@
+2025-11-20 01:58:42,501 - __main__ - INFO - 🚀 Starting Chrome Driver and Provider Tests
+2025-11-20 01:58:42,501 - __main__ - INFO - Test started at: 2025-11-20 01:58:42.501476
+2025-11-20 01:58:42,501 - __main__ - INFO - ==================================================
+2025-11-20 01:58:42,501 - __main__ - INFO - Testing configuration loading...
+2025-11-20 01:58:42,501 - __main__ - INFO - ✅ Configuration loaded successfully
+2025-11-20 01:58:42,501 - __main__ - INFO -   Scrapers: ['immoscout', 'wg_gesucht']
+2025-11-20 01:58:42,501 - __main__ - INFO -   Contact discovery enabled: True
+2025-11-20 01:58:42,501 - __main__ - INFO - ==================================================
+2025-11-20 01:58:42,501 - __main__ - INFO - Testing basic Chrome driver...
+2025-11-20 01:58:42,603 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 01:58:42,603 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 01:58:42,721 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 01:58:42,775 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 01:58:42,830 - WDM - INFO - Driver [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.175/chromedriver-mac-arm64/chromedriver] found in cache
+2025-11-20 01:58:44,092 - mafa.driver - INFO - Chrome driver initialized successfully
+2025-11-20 01:58:44,092 - __main__ - INFO - ✅ Chrome driver initialized successfully
+2025-11-20 01:58:44,518 - __main__ - INFO - ✅ Successfully navigated to test page: 
+2025-11-20 01:58:44,521 - __main__ - INFO - ✅ Page source retrieved successfully
+2025-11-20 01:58:44,608 - __main__ - INFO - ==================================================
+2025-11-20 01:58:44,608 - __main__ - INFO - Testing ImmoScout24 provider...
+2025-11-20 01:58:44,917 - __main__ - INFO - Provider initialized with URL: https://www.immobilienscout24.de/Suche/de/bayern/muenchen/wohnung-mieten
+2025-11-20 01:58:44,917 - mwa_core.providers.immoscout - INFO - ImmoScout scraping attempt 1/2
+2025-11-20 01:58:44,917 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 01:58:44,917 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 01:58:45,124 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 01:58:45,175 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 01:58:45,224 - WDM - INFO - Driver [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.175/chromedriver-mac-arm64/chromedriver] found in cache
+2025-11-20 01:58:45,905 - mafa.driver - INFO - Chrome driver initialized successfully
+2025-11-20 01:59:47,224 - mwa_core.providers.immoscout - ERROR - Scraping error on attempt 1: Message: invalid selector: An invalid or illegal selector was specified
+  (Session info: chrome=142.0.7444.135); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidselectorexception
+Stacktrace:
+0   chromedriver                        0x0000000104edeecc cxxbridge1$str$ptr + 2941512
+1   chromedriver                        0x0000000104ed6b88 cxxbridge1$str$ptr + 2907908
+2   chromedriver                        0x00000001049ee2b0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 74020
+3   chromedriver                        0x00000001049f41e0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 98388
+4   chromedriver                        0x00000001049f6314 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 106888
+5   chromedriver                        0x00000001049f63cc _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 107072
+6   chromedriver                        0x0000000104a3545c _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 365264
+7   chromedriver                        0x0000000104a76d54 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 633800
+8   chromedriver                        0x0000000104a29ef0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 318820
+9   chromedriver                        0x0000000104ea20c8 cxxbridge1$str$ptr + 2692164
+10  chromedriver                        0x0000000104ea58dc cxxbridge1$str$ptr + 2706520
+11  chromedriver                        0x0000000104e8284c cxxbridge1$str$ptr + 2563016
+12  chromedriver                        0x0000000104ea61b4 cxxbridge1$str$ptr + 2708784
+13  chromedriver                        0x0000000104e740f4 cxxbridge1$str$ptr + 2503792
+14  chromedriver                        0x0000000104ec5498 cxxbridge1$str$ptr + 2836500
+15  chromedriver                        0x0000000104ec561c cxxbridge1$str$ptr + 2836888
+16  chromedriver                        0x0000000104ed67d8 cxxbridge1$str$ptr + 2906964
+17  libsystem_pthread.dylib             0x0000000196821c08 _pthread_start + 136
+18  libsystem_pthread.dylib             0x000000019681cba8 thread_start + 8
+
+2025-11-20 01:59:47,224 - mwa_core.providers.immoscout - INFO - Retrying in 2 seconds...
+2025-11-20 01:59:49,229 - mwa_core.providers.immoscout - INFO - ImmoScout scraping attempt 2/2
+2025-11-20 01:59:49,230 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 01:59:49,230 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 01:59:53,471 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 01:59:53,625 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 01:59:53,716 - WDM - INFO - Driver [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.175/chromedriver-mac-arm64/chromedriver] found in cache
+2025-11-20 01:59:55,006 - mafa.driver - INFO - Chrome driver initialized successfully
+2025-11-20 02:00:56,032 - mwa_core.providers.immoscout - ERROR - Scraping error on attempt 2: Message: invalid selector: An invalid or illegal selector was specified
+  (Session info: chrome=142.0.7444.176); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidselectorexception
+Stacktrace:
+0   chromedriver                        0x000000010098eecc cxxbridge1$str$ptr + 2941512
+1   chromedriver                        0x0000000100986b88 cxxbridge1$str$ptr + 2907908
+2   chromedriver                        0x000000010049e2b0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 74020
+3   chromedriver                        0x00000001004a41e0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 98388
+4   chromedriver                        0x00000001004a6314 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 106888
+5   chromedriver                        0x00000001004a63cc _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 107072
+6   chromedriver                        0x00000001004e545c _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 365264
+7   chromedriver                        0x0000000100526d54 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 633800
+8   chromedriver                        0x00000001004d9ef0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 318820
+9   chromedriver                        0x00000001009520c8 cxxbridge1$str$ptr + 2692164
+10  chromedriver                        0x00000001009558dc cxxbridge1$str$ptr + 2706520
+11  chromedriver                        0x000000010093284c cxxbridge1$str$ptr + 2563016
+12  chromedriver                        0x00000001009561b4 cxxbridge1$str$ptr + 2708784
+13  chromedriver                        0x00000001009240f4 cxxbridge1$str$ptr + 2503792
+14  chromedriver                        0x0000000100975498 cxxbridge1$str$ptr + 2836500
+15  chromedriver                        0x000000010097561c cxxbridge1$str$ptr + 2836888
+16  chromedriver                        0x00000001009867d8 cxxbridge1$str$ptr + 2906964
+17  libsystem_pthread.dylib             0x0000000196821c08 _pthread_start + 136
+18  libsystem_pthread.dylib             0x000000019681cba8 thread_start + 8
+
+2025-11-20 02:00:56,033 - mwa_core.providers.immoscout - ERROR - All attempts failed. Last error: Message: invalid selector: An invalid or illegal selector was specified
+  (Session info: chrome=142.0.7444.176); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidselectorexception
+Stacktrace:
+0   chromedriver                        0x000000010098eecc cxxbridge1$str$ptr + 2941512
+1   chromedriver                        0x0000000100986b88 cxxbridge1$str$ptr + 2907908
+2   chromedriver                        0x000000010049e2b0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 74020
+3   chromedriver                        0x00000001004a41e0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 98388
+4   chromedriver                        0x00000001004a6314 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 106888
+5   chromedriver                        0x00000001004a63cc _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 107072
+6   chromedriver                        0x00000001004e545c _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 365264
+7   chromedriver                        0x0000000100526d54 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 633800
+8   chromedriver                        0x00000001004d9ef0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 318820
+9   chromedriver                        0x00000001009520c8 cxxbridge1$str$ptr + 2692164
+10  chromedriver                        0x00000001009558dc cxxbridge1$str$ptr + 2706520
+11  chromedriver                        0x000000010093284c cxxbridge1$str$ptr + 2563016
+12  chromedriver                        0x00000001009561b4 cxxbridge1$str$ptr + 2708784
+13  chromedriver                        0x00000001009240f4 cxxbridge1$str$ptr + 2503792
+14  chromedriver                        0x0000000100975498 cxxbridge1$str$ptr + 2836500
+15  chromedriver                        0x000000010097561c cxxbridge1$str$ptr + 2836888
+16  chromedriver                        0x00000001009867d8 cxxbridge1$str$ptr + 2906964
+17  libsystem_pthread.dylib             0x0000000196821c08 _pthread_start + 136
+18  libsystem_pthread.dylib             0x000000019681cba8 thread_start + 8
+
+2025-11-20 02:00:56,033 - __main__ - INFO - ✅ ImmoScout scraping completed: 0 listings found
+2025-11-20 02:00:56,033 - __main__ - INFO - ==================================================
+2025-11-20 02:00:56,033 - __main__ - INFO - Testing WG-Gesucht provider...
+2025-11-20 02:00:56,033 - __main__ - INFO - Provider initialized with URL: https://www.wg-gesucht.de/wg-gesucht/muenchen.html
+2025-11-20 02:00:56,033 - mwa_core.providers.wg_gesucht - INFO - WG-Gesucht scraping attempt 1/2
+2025-11-20 02:00:56,033 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 02:00:56,033 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 02:00:56,396 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:00:56,577 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:00:56,764 - WDM - INFO - Driver [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.175/chromedriver-mac-arm64/chromedriver] found in cache
+2025-11-20 02:00:57,501 - mafa.driver - INFO - Chrome driver initialized successfully
+2025-11-20 02:02:59,049 - mwa_core.providers.wg_gesucht - ERROR - Scraping error on attempt 1: Message: invalid selector: An invalid or illegal selector was specified
+  (Session info: chrome=142.0.7444.176); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidselectorexception
+Stacktrace:
+0   chromedriver                        0x00000001006daecc cxxbridge1$str$ptr + 2941512
+1   chromedriver                        0x00000001006d2b88 cxxbridge1$str$ptr + 2907908
+2   chromedriver                        0x00000001001ea2b0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 74020
+3   chromedriver                        0x00000001001f01e0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 98388
+4   chromedriver                        0x00000001001f2314 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 106888
+5   chromedriver                        0x00000001001f23cc _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 107072
+6   chromedriver                        0x000000010023145c _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 365264
+7   chromedriver                        0x0000000100272d54 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 633800
+8   chromedriver                        0x0000000100225ef0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 318820
+9   chromedriver                        0x000000010069e0c8 cxxbridge1$str$ptr + 2692164
+10  chromedriver                        0x00000001006a18dc cxxbridge1$str$ptr + 2706520
+11  chromedriver                        0x000000010067e84c cxxbridge1$str$ptr + 2563016
+12  chromedriver                        0x00000001006a21b4 cxxbridge1$str$ptr + 2708784
+13  chromedriver                        0x00000001006700f4 cxxbridge1$str$ptr + 2503792
+14  chromedriver                        0x00000001006c1498 cxxbridge1$str$ptr + 2836500
+15  chromedriver                        0x00000001006c161c cxxbridge1$str$ptr + 2836888
+16  chromedriver                        0x00000001006d27d8 cxxbridge1$str$ptr + 2906964
+17  libsystem_pthread.dylib             0x0000000196821c08 _pthread_start + 136
+18  libsystem_pthread.dylib             0x000000019681cba8 thread_start + 8
+
+2025-11-20 02:02:59,049 - mwa_core.providers.wg_gesucht - INFO - Retrying in 2 seconds...
+2025-11-20 02:03:01,054 - mwa_core.providers.wg_gesucht - INFO - WG-Gesucht scraping attempt 2/2
+2025-11-20 02:03:01,055 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 02:03:01,055 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 02:03:01,386 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:03:01,470 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:03:01,598 - WDM - INFO - Driver [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.175/chromedriver-mac-arm64/chromedriver] found in cache
+2025-11-20 02:03:02,512 - mafa.driver - INFO - Chrome driver initialized successfully
+2025-11-20 02:03:03,634 - urllib3.connectionpool - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(54, 'Connection reset by peer')': /session/7b480fa39259cd8767e4bb40436781a7
+2025-11-20 02:03:03,635 - urllib3.connectionpool - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x1177f5660>: Failed to establish a new connection: [Errno 61] Connection refused')': /session/7b480fa39259cd8767e4bb40436781a7
+2025-11-20 02:03:03,635 - urllib3.connectionpool - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x1177f4ee0>: Failed to establish a new connection: [Errno 61] Connection refused')': /session/7b480fa39259cd8767e4bb40436781a7

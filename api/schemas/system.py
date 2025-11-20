@@ -22,7 +22,7 @@ from .common import (
 # Health Check Models
 class HealthCheckResponse(BaseModel):
     """Response model for health check."""
-    status: str = Field(..., regex="^(healthy|degraded|unhealthy)$", description="Overall health status")
+    status: str = Field(..., pattern="^(healthy|degraded|unhealthy)$", description="Overall health status")
     timestamp: datetime = Field(default_factory=datetime.now, description="Check timestamp")
     service: str = Field(..., description="Service name")
     version: str = Field(..., description="Service version")
@@ -55,7 +55,7 @@ class HealthCheckResponse(BaseModel):
 class ComponentHealth(BaseModel):
     """Health status of a system component."""
     name: str = Field(..., description="Component name")
-    status: str = Field(..., regex="^(healthy|degraded|unhealthy)$", description="Component status")
+    status: str = Field(..., pattern="^(healthy|degraded|unhealthy)$", description="Component status")
     healthy: bool = Field(..., description="Whether component is healthy")
     last_check: datetime = Field(default_factory=datetime.now, description="Last check timestamp")
     response_time_ms: Optional[float] = Field(None, description="Response time in milliseconds")
@@ -328,7 +328,7 @@ class ErrorReportRequest(BaseModel):
     error_message: str = Field(..., min_length=1, description="Error message")
     component: str = Field(..., min_length=1, description="Component where error occurred")
     context: Optional[Dict[str, Any]] = Field(None, description="Error context")
-    severity: str = Field("error", regex="^(info|warning|error|critical)$", description="Error severity")
+    severity: str = Field("error", pattern="^(info|warning|error|critical)$", description="Error severity")
     stack_trace: Optional[str] = Field(None, description="Stack trace if available")
     user_agent: Optional[str] = Field(None, description="User agent string")
     
@@ -412,7 +412,7 @@ class ErrorSummary(BaseModel):
 class LogEntry(BaseModel):
     """System log entry."""
     timestamp: datetime = Field(..., description="Log entry timestamp")
-    level: str = Field(..., regex="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$", description="Log level")
+    level: str = Field(..., pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$", description="Log level")
     component: str = Field(..., description="Logging component")
     message: str = Field(..., description="Log message")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional log metadata")
@@ -564,7 +564,7 @@ class MetricSeries(BaseModel):
 # System Control Models
 class SystemShutdownRequest(BaseModel):
     """Request model for system shutdown."""
-    mode: str = Field("graceful", regex="^(graceful|force)$", description="Shutdown mode")
+    mode: str = Field("graceful", pattern="^(graceful|force)$", description="Shutdown mode")
     delay_seconds: int = Field(30, ge=0, le=300, description="Shutdown delay in seconds")
     reason: Optional[str] = Field(None, description="Shutdown reason")
     notify_users: bool = Field(True, description="Whether to notify users")
@@ -627,7 +627,7 @@ class ResourceAlert(BaseModel):
     metric: str = Field(..., description="Metric that triggered alert")
     threshold: float = Field(..., description="Alert threshold")
     current_value: float = Field(..., description="Current metric value")
-    severity: str = Field(..., regex="^(low|medium|high|critical)$", description="Alert severity")
+    severity: str = Field(..., pattern="^(low|medium|high|critical)$", description="Alert severity")
     message: str = Field(..., description="Alert message")
     timestamp: datetime = Field(default_factory=datetime.now, description="Alert timestamp")
     
@@ -654,7 +654,7 @@ class MaintenanceWindow(BaseModel):
     start_time: datetime = Field(..., description="Maintenance start time")
     end_time: datetime = Field(..., description="Maintenance end time")
     affected_components: List[str] = Field(..., description="Components affected")
-    status: str = Field(..., regex="^(scheduled|in_progress|completed|cancelled)$", description="Window status")
+    status: str = Field(..., pattern="^(scheduled|in_progress|completed|cancelled)$", description="Window status")
     
     class Config:
         schema_extra = {
@@ -672,7 +672,7 @@ class MaintenanceWindow(BaseModel):
 
 class SystemMaintenanceRequest(BaseModel):
     """Request model for system maintenance."""
-    action: str = Field(..., regex="^(start|end|schedule|cancel)$", description="Maintenance action")
+    action: str = Field(..., pattern="^(start|end|schedule|cancel)$", description="Maintenance action")
     window_id: Optional[str] = Field(None, description="Maintenance window ID")
     name: Optional[str] = Field(None, description="Maintenance name")
     description: Optional[str] = Field(None, description="Maintenance description")
@@ -720,7 +720,7 @@ class VersionInfo(BaseModel):
 
 class SystemStatusResponse(BaseModel):
     """Comprehensive system status response."""
-    overall_status: str = Field(..., regex="^(healthy|degraded|unhealthy)$", description="Overall system status")
+    overall_status: str = Field(..., pattern="^(healthy|degraded|unhealthy)$", description="Overall system status")
     timestamp: datetime = Field(default_factory=datetime.now, description="Status timestamp")
     uptime_seconds: float = Field(..., description="System uptime")
     components: List[ComponentHealth] = Field(..., description="Component statuses")

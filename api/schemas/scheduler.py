@@ -113,8 +113,8 @@ class JobCreateRequest(BaseModel):
     """Request model for creating a scheduled job."""
     name: str = Field(..., min_length=1, max_length=200, description="Job name")
     description: Optional[str] = Field(None, max_length=500, description="Job description")
-    job_type: str = Field(..., regex="^(scraping|cleanup|backup|notification|maintenance)$", description="Job type")
-    provider: Optional[str] = Field(None, regex="^(immoscout|wg_gesucht|all)$", description="Associated provider")
+    job_type: str = Field(..., pattern="^(scraping|cleanup|backup|notification|maintenance)$", description="Job type")
+    provider: Optional[str] = Field(None, pattern="^(immoscout|wg_gesucht|all)$", description="Associated provider")
     schedule_expression: str = Field(..., description="Cron-style schedule expression")
     enabled: bool = Field(True, description="Whether job is enabled")
     parameters: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Job parameters")
@@ -303,7 +303,7 @@ class SchedulerConfigRequest(BaseModel):
 class JobControlRequest(BaseModel):
     """Request model for job control operations."""
     job_id: str = Field(..., description="Job identifier")
-    action: str = Field(..., regex="^(pause|resume|trigger|cancel)$", description="Control action")
+    action: str = Field(..., pattern="^(pause|resume|trigger|cancel)$", description="Control action")
     parameters: Optional[Dict[str, Any]] = Field(None, description="Action parameters")
     
     class Config:
@@ -414,7 +414,7 @@ class JobDependency(BaseModel):
     """Job dependency definition."""
     dependent_job: str = Field(..., description="Job that depends on another")
     prerequisite_job: str = Field(..., description="Job that must complete first")
-    dependency_type: str = Field("completion", regex="^(completion|success|failure)$", description="Dependency type")
+    dependency_type: str = Field("completion", pattern="^(completion|success|failure)$", description="Dependency type")
     timeout_seconds: Optional[int] = Field(None, description="Dependency timeout")
     
     class Config:
@@ -460,7 +460,7 @@ class JobWorkflow(BaseModel):
 class WorkerInfo(BaseModel):
     """Scheduler worker information."""
     worker_id: str = Field(..., description="Worker identifier")
-    status: str = Field(..., regex="^(idle|busy|offline|error)$", description="Worker status")
+    status: str = Field(..., pattern="^(idle|busy|offline|error)$", description="Worker status")
     current_job: Optional[str] = Field(None, description="Current job being executed")
     jobs_completed: int = Field(..., description="Number of jobs completed")
     jobs_failed: int = Field(..., description="Number of jobs failed")
@@ -543,7 +543,7 @@ class ScheduleConflict(BaseModel):
     job_id: str = Field(..., description="Conflicting job ID")
     conflicting_job_id: str = Field(..., description="Job causing conflict")
     conflict_type: str = Field(..., description="Type of conflict")
-    severity: str = Field(..., regex="^(low|medium|high)$", description="Conflict severity")
+    severity: str = Field(..., pattern="^(low|medium|high)$", description="Conflict severity")
     description: str = Field(..., description="Conflict description")
     suggested_resolution: Optional[str] = Field(None, description="Suggested resolution")
     
@@ -564,7 +564,7 @@ class ScheduleConflict(BaseModel):
 class JobRecoveryRequest(BaseModel):
     """Request model for job recovery operations."""
     job_id: str = Field(..., description="Job to recover")
-    action: str = Field(..., regex="^(retry|skip|reschedule|cancel)$", description="Recovery action")
+    action: str = Field(..., pattern="^(retry|skip|reschedule|cancel)$", description="Recovery action")
     execution_id: Optional[str] = Field(None, description="Failed execution ID")
     parameters: Optional[Dict[str, Any]] = Field(None, description="Recovery parameters")
     

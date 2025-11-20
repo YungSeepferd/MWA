@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Setup - MAFA Configuration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/dashboard.css" rel="stylesheet">
+    <link href="/static/css/setup-wizard.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-home"></i> MAFA Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="setup-container">
+        <div class="container">
+            <!-- Progress Bar -->
+            <div class="setup-progress">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="progress mb-4">
+                            <div class="progress-bar" id="progressBar" style="width: 25%;">
+                                25%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-xl-6">
+                    <!-- Step 1: Search Preferences -->
+                    <div class="setup-step active" id="step1">
+                        <div class="card setup-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-search me-2"></i>Search Preferences</h2>
+                                <p class="text-muted mb-0">Tell us what you're looking for in an apartment</p>
+                            </div>
+                            <div class="card-body">
+                                <form id="searchForm">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="minRent" class="form-label">Min. Rent (€)</label>
+                                            <input type="number" class="form-control" id="minRent" name="minRent" 
+                                                   placeholder="300" min="0">
+                                            <div class="form-text">Minimum monthly rent</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="maxRent" class="form-label">Max. Rent (€)</label>
+                                            <input type="number" class="form-control" id="maxRent" name="maxRent" 
+                                                   placeholder="1500" min="0">
+                                            <div class="form-text">Maximum monthly rent</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="minSize" class="form-label">Min. Size (m²)</label>
+                                            <input type="number" class="form-control" id="minSize" name="minSize" 
+                                                   placeholder="30" min="0">
+                                            <div class="form-text">Minimum apartment size</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="location" class="form-label">Preferred Area</label>
+                                            <select class="form-select" id="location" name="location">
+                                                <option value="">Any area</option>
+                                                <option value="center">City Center</option>
+                                                <option value="north">North</option>
+                                                <option value="south">South</option>
+                                                <option value="east">East</option>
+                                                <option value="west">West</option>
+                                                <option value="suburbs">Suburbs</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary" onclick="goBack()">
+                                    <i class="fas fa-arrow-left me-2"></i>Back
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                    Next <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Notification Settings -->
+                    <div class="setup-step" id="step2">
+                        <div class="card setup-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-bell me-2"></i>Notifications</h2>
+                                <p class="text-muted mb-0">Choose how you want to be notified</p>
+                            </div>
+                            <div class="card-body">
+                                <form id="notificationForm">
+                                    <div class="mb-4">
+                                        <h5>Notification Channels</h5>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" id="emailNotifications" name="emailNotifications" checked>
+                                            <label class="form-check-label" for="emailNotifications">
+                                                <i class="fas fa-envelope me-2"></i>Email Notifications
+                                            </label>
+                                            <div class="form-text">Receive email alerts for new matches</div>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" id="discordNotifications" name="discordNotifications">
+                                            <label class="form-check-label" for="discordNotifications">
+                                                <i class="fab fa-discord me-2"></i>Discord Notifications
+                                            </label>
+                                            <div class="form-text">Instant Discord messages</div>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="telegramNotifications" name="telegramNotifications">
+                                            <label class="form-check-label" for="telegramNotifications">
+                                                <i class="fab fa-telegram me-2"></i>Telegram Notifications
+                                            </label>
+                                            <div class="form-text">Telegram bot alerts</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h5>Email Settings</h5>
+                                        <div class="mb-3">
+                                            <label for="emailAddress" class="form-label">Email Address</label>
+                                            <input type="email" class="form-control" id="emailAddress" name="emailAddress" placeholder="your@email.com">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary" onclick="prevStep()">
+                                    <i class="fas fa-arrow-left me-2"></i>Back
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                    Next <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Provider Setup -->
+                    <div class="setup-step" id="step3">
+                        <div class="card setup-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-globe me-2"></i>Platforms</h2>
+                                <p class="text-muted mb-0">Select apartment platforms to search</p>
+                            </div>
+                            <div class="card-body">
+                                <form id="providersForm">
+                                    <h5 class="mb-3">Apartment Platforms</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="immoscoutEnabled" name="immoscoutEnabled" checked>
+                                                <label class="form-check-label" for="immoscoutEnabled">
+                                                    <img src="/static/images/immoscout.png" alt="ImmoScout" class="provider-icon me-2" style="height: 24px;">
+                                                    ImmoScout24
+                                                </label>
+                                                <div class="form-text">Germany's largest apartment platform</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="wgGesuchtEnabled" name="wgGesuchtEnabled" checked>
+                                                <label class="form-check-label" for="wgGesuchtEnabled">
+                                                    <img src="/static/images/wg-gesucht.png" alt="WG Gesucht" class="provider-icon me-2" style="height: 24px;">
+                                                    WG-Gesucht
+                                                </label>
+                                                <div class="form-text">Popular for shared apartments</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary" onclick="prevStep()">
+                                    <i class="fas fa-arrow-left me-2"></i>Back
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                    Next <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Review & Complete -->
+                    <div class="setup-step" id="step4">
+                        <div class="card setup-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-check me-2"></i>Review Settings</h2>
+                                <p class="text-muted mb-0">Review your configuration</p>
+                            </div>
+                            <div class="card-body">
+                                <div id="configurationReview">
+                                    <!-- Configuration summary will be populated here -->
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary" onclick="prevStep()">
+                                    <i class="fas fa-arrow-left me-2"></i>Back
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="completeSetup()">
+                                    <i class="fas fa-check me-2"></i>Complete Setup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div class="setup-step" id="successStep" style="display: none;">
+                        <div class="card setup-card">
+                            <div class="card-body text-center py-5">
+                                <div class="success-icon mb-4">
+                                    <i class="fas fa-check-circle fa-4x text-success"></i>
+                                </div>
+                                <h2 class="text-success mb-3">Setup Complete!</h2>
+                                <p class="text-muted mb-4">Your MAFA configuration has been saved successfully.</p>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                    <button type="button" class="btn btn-primary btn-lg" onclick="goToDashboard()">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary btn-lg" onclick="startSearch()">
+                                        <i class="fas fa-search me-2"></i>Start Search Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mb-0">Saving your configuration...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/setup-wizard.js"></script>
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+        let configuration = {};
+
+        // Initialize setup wizard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSetupWizard();
+        });
+
+        function initializeSetupWizard() {
+            updateProgressBar();
+            loadCurrentConfiguration();
+        }
+
+        function updateProgressBar() {
+            const percentage = (currentStep / totalSteps) * 100;
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = Math.round(percentage) + '%';
+        }
+
+        function showStep(stepNumber) {
+            // Hide all steps
+            document.querySelectorAll('.setup-step').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            // Show target step
+            const targetStep = document.getElementById(stepNumber === 'success' ? 'successStep' : `step${stepNumber}`);
+            if (targetStep) {
+                targetStep.classList.add('active');
+                if (stepNumber === 4) {
+                    updateConfigurationReview();
+                }
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+                updateProgressBar();
+                
+                if (currentStep === 4) {
+                    updateConfigurationReview();
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+                updateProgressBar();
+            }
+        }
+
+        function goBack() {
+            window.location.href = '/dashboard/setup/welcome';
+        }
+
+        function updateConfigurationReview() {
+            const reviewElement = document.getElementById('configurationReview');
+            const searchConfig = document.getElementById('searchForm').elements;
+            const notificationConfig = document.getElementById('notificationForm').elements;
+            const providersConfig = document.getElementById('providersForm').elements;
+
+            configuration = {
+                search: {
+                    minRent: searchConfig.namedItem('minRent').value || 'Any',
+                    maxRent: searchConfig.namedItem('maxRent').value || 'Any',
+                    minSize: searchConfig.namedItem('minSize').value || 'Any',
+                    location: searchConfig.namedItem('location').value || 'Any area'
+                },
+                notifications: {
+                    email: notificationConfig.namedItem('emailNotifications').checked,
+                    emailAddress: notificationConfig.namedItem('emailAddress').value,
+                    discord: notificationConfig.namedItem('discordNotifications').checked,
+                    telegram: notificationConfig.namedItem('telegramNotifications').checked
+                },
+                providers: {
+                    immoscout: providersConfig.namedItem('immoscoutEnabled').checked,
+                    wgGesucht: providersConfig.namedItem('wgGesuchtEnabled').checked
+                }
+            };
+
+            reviewElement.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h5><i class="fas fa-search me-2"></i>Search Preferences</h5>
+                        <ul class="list-unstyled">
+                            <li><strong>Rent Range:</strong> €${configuration.search.minRent} - €${configuration.search.maxRent}</li>
+                            <li><strong>Min Size:</strong> ${configuration.search.minSize}m²</li>
+                            <li><strong>Location:</strong> ${configuration.search.location}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <h5><i class="fas fa-bell me-2"></i>Notifications</h5>
+                        <ul class="list-unstyled">
+                            <li><strong>Email:</strong> ${configuration.notifications.email ? 'Enabled' : 'Disabled'}</li>
+                            ${configuration.notifications.email ? `<li><strong>Address:</strong> ${configuration.notifications.emailAddress}</li>` : ''}
+                            <li><strong>Discord:</strong> ${configuration.notifications.discord ? 'Enabled' : 'Disabled'}</li>
+                            <li><strong>Telegram:</strong> ${configuration.notifications.telegram ? 'Enabled' : 'Disabled'}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <h5><i class="fas fa-globe me-2"></i>Platforms</h5>
+                        <ul class="list-unstyled">
+                            <li><strong>ImmoScout24:</strong> ${configuration.providers.immoscout ? 'Enabled' : 'Disabled'}</li>
+                            <li><strong>WG-Gesucht:</strong> ${configuration.providers.wgGesucht ? 'Enabled' : 'Disabled'}</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function completeSetup() {
+            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+            loadingModal.show();
+
+            try {
+                const configResponse = await saveConfiguration();
+                if (configResponse.success) {
+                    currentStep = 'success';
+                    showStep('success');
+                    updateProgressBar();
+                    
+                    // Notify WebSocket about setup completion
+                    if (window.websocketManager) {
+                        window.websocketManager.broadcastSetupWizardProgress({
+                            step: 'completed',
+                            progress: 100,
+                            completed: true
+                        });
+                    }
+                } else {
+                    throw new Error(configResponse.error || 'Failed to save configuration');
+                }
+            } catch (error) {
+                console.error('Setup completion error:', error);
+                alert('Error saving configuration: ' + error.message);
+            } finally {
+                loadingModal.hide();
+            }
+        }
+
+        async function saveConfiguration() {
+            try {
+                const response = await fetch('/api/v1/config/', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        section: 'search',
+                        updates: {
+                            search_criteria: {
+                                rent_range: {
+                                    min: parseInt(configuration.search.minRent) || 0,
+                                    max: parseInt(configuration.search.maxRent) || 5000
+                                },
+                                size_min: parseInt(configuration.search.minSize) || 0,
+                                preferred_areas: configuration.search.location !== 'Any area' ? [configuration.search.location] : []
+                            }
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                // Save notification settings
+                await fetch('/api/v1/config/', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        section: 'notification',
+                        updates: {
+                            email: {
+                                enabled: configuration.notifications.email,
+                                address: configuration.notifications.emailAddress
+                            },
+                            discord: {
+                                enabled: configuration.notifications.discord
+                            },
+                            telegram: {
+                                enabled: configuration.notifications.telegram
+                            }
+                        }
+                    })
+                });
+
+                // Save provider settings
+                await fetch('/api/v1/config/', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        section: 'providers',
+                        updates: {
+                            immoscout24: {
+                                enabled: configuration.providers.immoscout
+                            },
+                            wg_gesucht: {
+                                enabled: configuration.providers.wgGesucht
+                            }
+                        }
+                    })
+                });
+
+                return { success: true, data: result };
+            } catch (error) {
+                console.error('Configuration save error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function loadCurrentConfiguration() {
+            try {
+                const response = await fetch('/api/v1/config/');
+                if (response.ok) {
+                    const data = await response.json();
+                    // Pre-fill form fields with existing configuration
+                    if (data.config.search?.search_criteria) {
+                        const criteria = data.config.search.search_criteria;
+                        if (criteria.rent_range?.min) {
+                            document.getElementById('minRent').value = criteria.rent_range.min;
+                        }
+                        if (criteria.rent_range?.max) {
+                            document.getElementById('maxRent').value = criteria.rent_range.max;
+                        }
+                        if (criteria.size_min) {
+                            document.getElementById('minSize').value = criteria.size_min;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
+            }
+        }
+
+        function goToDashboard() {
+            window.location.href = '/dashboard';
+        }
+
+        function startSearch() {
+            window.location.href = '/dashboard/search';
+        }
+    </script>
+</body>
+</html>

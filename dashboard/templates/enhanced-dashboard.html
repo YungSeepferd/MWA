@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MAFA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/dashboard.css" rel="stylesheet">
+    <link href="/static/css/enhanced-dashboard.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Enhanced Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-home"></i> MAFA
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard/search">
+                            <i class="fas fa-search"></i> Search Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard/contacts">
+                            <i class="fas fa-address-book"></i> Contacts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard/analytics">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> Account
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/dashboard/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                            <li><a class="dropdown-item" href="/dashboard/setup"><i class="fas fa-wrench"></i> Re-setup</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/api/docs" target="_blank"><i class="fas fa-code"></i> API Docs</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item me-3">
+                        <span class="navbar-text">
+                            <i class="fas fa-circle text-success" id="connection-status"></i>
+                            <span id="connection-text">Online</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health" target="_blank">
+                            <i class="fas fa-heartbeat"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <!-- Welcome Header with Real-time Status -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-header bg-gradient-primary text-white rounded-3 p-4">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <h1 class="display-5 fw-bold mb-2">
+                                <i class="fas fa-tachometer-alt me-3"></i>Dashboard
+                            </h1>
+                            <p class="lead mb-2" id="welcome-message">Welcome back! Here's your apartment search overview.</p>
+                            <p class="mb-0 opacity-75">
+                                <i class="fas fa-clock me-2"></i>
+                                Last updated: <span id="last-updated">Just now</span>
+                            </p>
+                        </div>
+                        <div class="col-lg-4 text-lg-end">
+                            <div class="quick-actions">
+                                <button class="btn btn-light me-2" onclick="refreshDashboard()">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                                <button class="btn btn-outline-light" onclick="showQuickSetup()">
+                                    <i class="fas fa-plus"></i> Quick Setup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Status Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="status-card h-100">
+                    <div class="status-card-body">
+                        <div class="status-icon bg-primary">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="status-content">
+                            <h3 class="status-number" id="active-searches">0</h3>
+                            <p class="status-label">Active Searches</p>
+                            <small class="status-trend text-success" id="searches-trend">
+                                <i class="fas fa-arrow-up"></i> +0 this week
+                            </small>
+                        </div>
+                        <div class="status-indicator">
+                            <div class="pulse-indicator bg-primary"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="status-card h-100">
+                    <div class="status-card-body">
+                        <div class="status-icon bg-success">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="status-content">
+                            <h3 class="status-number" id="new-contacts">0</h3>
+                            <p class="status-label">New Contacts</p>
+                            <small class="status-trend text-success" id="contacts-trend">
+                                <i class="fas fa-arrow-up"></i> +0 today
+                            </small>
+                        </div>
+                        <div class="status-indicator">
+                            <div class="pulse-indicator bg-success"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="status-card h-100">
+                    <div class="status-card-body">
+                        <div class="status-icon bg-warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="status-content">
+                            <h3 class="status-number" id="pending-review">0</h3>
+                            <p class="status-label">Pending Review</p>
+                            <small class="status-trend text-muted" id="pending-trend">
+                                <i class="fas fa-minus"></i> 0 changes
+                            </small>
+                        </div>
+                        <div class="status-indicator">
+                            <div class="pulse-indicator bg-warning"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="status-card h-100">
+                    <div class="status-card-body">
+                        <div class="status-icon bg-info">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="status-content">
+                            <h3 class="status-number" id="success-rate">0%</h3>
+                            <p class="status-label">Success Rate</p>
+                            <small class="status-trend text-success" id="success-trend">
+                                <i class="fas fa-arrow-up"></i> +0% this month
+                            </small>
+                        </div>
+                        <div class="status-indicator">
+                            <div class="pulse-indicator bg-info"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Content -->
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Recent Activity & New Contacts -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card dashboard-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-activity me-2"></i>Recent Activity
+                                </h5>
+                                <div class="card-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewAllActivity()">
+                                        View All
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="activity-feed" id="activity-feed">
+                                    <!-- Activity items populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Performance -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card dashboard-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-area me-2"></i>Search Performance
+                                </h5>
+                                <div class="card-actions">
+                                    <select class="form-select form-select-sm" id="performance-timeframe" onchange="updatePerformanceChart()">
+                                        <option value="7">Last 7 days</option>
+                                        <option value="30">Last 30 days</option>
+                                        <option value="90">Last 90 days</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="performance-chart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Quick Actions Panel -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions-grid">
+                            <button class="quick-action-btn" onclick="startNewSearch()">
+                                <i class="fas fa-search"></i>
+                                <span>New Search</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="reviewContacts()">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Review Contacts</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="exportData()">
+                                <i class="fas fa-download"></i>
+                                <span>Export Data</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="openSettings()">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-server me-2"></i>System Status
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="system-status">
+                            <div class="status-item">
+                                <div class="status-dot bg-success"></div>
+                                <span>Scraper Service</span>
+                                <span class="status-text text-success" id="scraper-status">Active</span>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-dot bg-success"></div>
+                                <span>Contact Discovery</span>
+                                <span class="status-text text-success" id="discovery-status">Running</span>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-dot bg-success"></div>
+                                <span>Notifications</span>
+                                <span class="status-text text-success" id="notification-status">Connected</span>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-dot bg-warning"></div>
+                                <span>Database</span>
+                                <span class="status-text text-warning" id="database-status">Syncing</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Performing Sources -->
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-trophy me-2"></i>Top Sources
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="sources-list" id="top-sources">
+                            <!-- Top sources populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin fa-3x"></i>
+            <p>Loading dashboard data...</p>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        <!-- Toasts will be added here dynamically -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2024 MAFA - Munich Apartment Finder Assistant</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="mb-0">
+                        <small>Version 2.0 | <a href="/privacy" class="text-decoration-none">Privacy</a> | <a href="/support" class="text-decoration-none">Support</a></small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/dashboard-realtime.js"></script>
+    <script src="/static/js/enhanced-dashboard.js"></script>
+</body>
+</html>

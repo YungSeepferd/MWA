@@ -127,7 +127,7 @@ class ContactCrawler:
         self.config = config
         self.settings = config.contact_discovery
         self.session = httpx.AsyncClient(
-            timeout=self.settings.timeout,
+            timeout=self.settings.request_timeout,
             limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
         )
         

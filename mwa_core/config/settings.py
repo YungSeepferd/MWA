@@ -91,6 +91,7 @@ class StorageConfig(BaseModel):
     database_path: str = Field("data/mwa_core.db", description="Path to SQLite database file")
     deduplication_enabled: bool = Field(True, description="Enable contact deduplication")
     validation_history_retention_days: int = Field(365, ge=30, description="Days to retain validation history")
+    database_schema: str = Field("mwa_core", description="Database schema name")
 
 
 class SearchCriteria(BaseModel):
@@ -301,6 +302,18 @@ class NotifiersConfig(BaseModel):
         return notifiers
 
 
+class SecurityConfig(BaseModel):
+    """Security configuration for authentication and authorization."""
+    secret_key: Optional[str] = Field(None, description="JWT secret key")
+    access_token_expire_minutes: int = Field(30, ge=1, le=1440, description="Access token expiration in minutes")
+    refresh_token_expire_days: int = Field(7, ge=1, le=30, description="Refresh token expiration in days")
+    password_min_length: int = Field(8, ge=4, le=128, description="Minimum password length")
+    max_login_attempts: int = Field(5, ge=1, le=20, description="Maximum login attempts before lockout")
+    lockout_duration_minutes: int = Field(15, ge=1, le=1440, description="Account lockout duration in minutes")
+    enable_csrf_protection: bool = Field(True, description="Enable CSRF protection")
+    session_timeout_minutes: int = Field(60, ge=5, le=1440, description="Session timeout in minutes")
+
+
 class Settings(BaseSettings):
     """
     Enhanced top-level settings object for MWA Core with comprehensive notification support.
@@ -340,6 +353,10 @@ class Settings(BaseSettings):
     scheduler: SchedulerConfig = Field(
         default_factory=SchedulerConfig,
         description="Scheduler configuration"
+    )
+    security: SecurityConfig = Field(
+        default_factory=SecurityConfig,
+        description="Security configuration"
     )
     
     # Path to the JSON configuration file

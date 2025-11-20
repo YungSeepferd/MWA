@@ -262,7 +262,7 @@ class ContactSearchRequest(BaseModel):
 # Contact Validation Models
 class ContactValidationRequest(BaseModel):
     """Request model for contact validation."""
-    validation_level: str = Field("standard", regex="^(basic|standard|comprehensive)$", description="Validation level")
+    validation_level: str = Field("standard", pattern="^(basic|standard|comprehensive)$", description="Validation level")
     methods: Optional[List[str]] = Field(None, description="Specific validation methods")
     async_validation: bool = Field(False, description="Run validation asynchronously")
     
@@ -421,9 +421,9 @@ class ValidationMethodStatistics(BaseModel):
 class ContactReviewRequest(BaseModel):
     """Request model for contact review operations."""
     contact_ids: List[int] = Field(..., min_items=1, description="List of contact IDs to review")
-    action: str = Field(..., regex="^(approve|reject|flag|validate)$", description="Review action")
+    action: str = Field(..., pattern="^(approve|reject|flag|validate)$", description="Review action")
     reason: Optional[str] = Field(None, max_length=500, description="Review reason")
-    confidence_level: Optional[str] = Field(None, regex="^(high|medium|low)$", description="Confidence level")
+    confidence_level: Optional[str] = Field(None, pattern="^(high|medium|low)$", description="Confidence level")
     
     class Config:
         schema_extra = {
@@ -485,7 +485,7 @@ class ContactReviewResponse(BaseModel):
 # Contact Export Models
 class ContactExportRequest(BaseModel):
     """Request model for contact export."""
-    format: str = Field("csv", regex="^(csv|json|xlsx)$", description="Export format")
+    format: str = Field("csv", pattern="^(csv|json|xlsx)$", description="Export format")
     filters: Optional[ContactSearchRequest] = Field(None, description="Export filters")
     include_metadata: bool = Field(True, description="Include validation metadata")
     include_validation_history: bool = Field(False, description="Include validation history")
@@ -537,7 +537,7 @@ class ContactExportResponse(BaseModel):
 class ContactBulkOperationRequest(BaseModel):
     """Request model for bulk contact operations."""
     contact_ids: List[int] = Field(..., min_items=1, description="List of contact IDs to process")
-    operation: str = Field(..., regex="^(validate|export|delete|merge|update_status)$", description="Bulk operation")
+    operation: str = Field(..., pattern="^(validate|export|delete|merge|update_status)$", description="Bulk operation")
     parameters: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Operation parameters")
     
     class Config:

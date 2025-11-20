@@ -270,7 +270,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         except Exception as e:
             # Log unexpected errors but don't block requests
             print(f"Rate limiter error: {e}")
-            return await call_next(request)
+            response = await call_next(request)
+            return response
     
     def get_stats(self) -> Dict[str, Any]:
         """Get rate limiting statistics."""

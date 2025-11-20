@@ -88,6 +88,38 @@ class ContactScoringEngine:
         self.scoring_cache = {}
         self.performance_history = {}
     
+    def _is_xing_url(self, url: str) -> bool:
+        """Check if URL is a valid XING URL."""
+        try:
+            parsed = urlparse(url)
+            return parsed.hostname in ['xing.com', 'www.xing.com']
+        except Exception:
+            return False
+    
+    def _is_subdomain_of(self, domain: str, parent_domain: str) -> bool:
+        """Check if domain is a subdomain of parent_domain."""
+        try:
+            # Check for exact match or subdomain
+            return domain == parent_domain or domain.endswith('.' + parent_domain)
+        except Exception:
+            return False
+    
+    def _contains_keyword(self, text: str, keyword: str) -> bool:
+        """Safely check if text contains keyword as a whole word."""
+        try:
+            # Use word boundaries to avoid partial matches
+            pattern = r'\b' + re.escape(keyword) + r'\b'
+            return bool(re.search(pattern, text, re.IGNORECASE))
+        except Exception:
+            return False
+    
+    def _is_exact_domain_or_subdomain(self, domain: str, target_domain: str) -> bool:
+        """Check if domain matches or is a subdomain of target_domain."""
+        try:
+            return domain == target_domain or domain.endswith('.' + target_domain)
+        except Exception:
+            return False
+    
     def score_contact(self, contact: Contact, context: Optional[Dict[str, Any]] = None) -> float:
         """
         Calculate comprehensive confidence score for a contact.
@@ -235,7 +267,7 @@ class ContactScoringEngine:
                 return 0.9
         
         # Munich area code validation
-        if '089' in clean_phone:
+        if self._contains_keyword(clean_phone, '089'):
             return 0.95
         
         return 0.7
@@ -286,7 +318,7 @@ class ContactScoringEngine:
             }
             
             for domain, pattern in platform_domains.items():
-                if domain in parsed.netloc:
+                if self._is_exact_domain_or_subdomain(parsed.netloc, domain):
                     if re.search(pattern, parsed.path):
                         return 0.9
                     else:
@@ -309,13 +341,13 @@ class ContactScoringEngine:
         
         # Check partial matches (for subdomains)
         for key, score in self.DOMAIN_REPUTATION.items():
-            if key in domain:
+            if self._is_subdomain_of(domain, key):
                 return score * 0.9  # Slight penalty for subdomains
         
         # Check for business-related keywords in domain
         business_keywords = ['immobilien', 'verwaltung', 'makler', 'realtor', 'estate']
         for keyword in business_keywords:
-            if keyword in domain.lower():
+            if self._contains_keyword(domain.lower(), keyword):
                 return 0.85
         
         # Default score for unknown domains
@@ -337,29 +369,30 @@ class ContactScoringEngine:
             ]
             
             for path_keyword in real_estate_paths:
-                if path_keyword in source_path:
+                if self._contains_keyword(source_path, path_keyword):
                     score += 0.2
             
             # Contact page indicators
             contact_paths = ['kontakt', 'contact', 'impressum', 'about']
             for contact_keyword in contact_paths:
-                if contact_keyword in source_path:
+                if self._contains_keyword(source_path, contact_keyword):
                     score += 0.15
         
         # Discovery path analysis
         if contact.discovery_path:
             for path in contact.discovery_path:
-                if any(keyword in path.lower() for keyword in ['contact', 'kontakt', 'impressum']):
+                if any(self._contains_keyword(path.lower(), keyword) for keyword in ['contact', 'kontakt', 'impressum']):
                     score += 0.1
         
         # Metadata analysis
         if contact.metadata:
             # Check for real estate related metadata
-            if any(keyword in str(contact.metadata).lower() for keyword in ['immobilien', 'property', 'real estate']):
+            metadata_str = str(contact.metadata).lower()
+            if any(self._contains_keyword(metadata_str, keyword) for keyword in ['immobilien', 'property', 'real estate']):
                 score += 0.1
             
             # Check for contact-related metadata
-            if 'contact' in str(contact.metadata).lower() or 'kontakt' in str(contact.metadata).lower():
+            if self._contains_keyword(metadata_str, 'contact') or self._contains_keyword(metadata_str, 'kontakt'):
                 score += 0.1
         
         return min(score, 1.0)
@@ -383,19 +416,19 @@ class ContactScoringEngine:
             # Email domain scoring
             if contact.method == ContactMethod.EMAIL and contact.domain:
                 german_domains = ['gmx.de', 'gmx.net', 'web.de', 't-online.de', 'freenet.de']
-                if any(domain in contact.domain for domain in german_domains):
+                if any(self._is_exact_domain_or_subdomain(contact.domain, german_domain) for german_domain in german_domains):
                     score += 0.3
             
             # Phone number scoring
             elif contact.method == ContactMethod.PHONE:
-                if '089' in contact.value:  # Munich area code
+                if self._contains_keyword(contact.value, '089'):  # Munich area code
                     score += 0.4
                 elif contact.value.startswith('+49') or contact.value.startswith('0049'):
                     score += 0.3
             
             # Social media platform scoring
             elif contact.method == ContactMethod.SOCIAL_MEDIA:
-                if 'xing.com' in contact.value:
+                if self._is_xing_url(contact.value):
                     score += 0.3  # XING is popular in German-speaking countries
         
         # Language preference scoring
@@ -555,13 +588,13 @@ class ContactScoringEngine:
         # Professional indicators
         professional_terms = ['immobilien', 'verwaltung', 'makler', 'property', 'realty']
         for term in professional_terms:
-            if term in username:
+            if self._contains_keyword(username, term):
                 score += 0.1
         
         # Spam indicators (reduce score)
         spam_indicators = ['123', 'xxx', 'spam', 'test']
         for indicator in spam_indicators:
-            if indicator in username:
+            if self._contains_keyword(username, indicator):
                 score -= 0.1
         
         return max(min(score, 1.0), 0.0)

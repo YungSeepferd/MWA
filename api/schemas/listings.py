@@ -353,7 +353,7 @@ class ProviderStatistics(BaseModel):
 # Listing Export Models
 class ListingExportRequest(BaseModel):
     """Request model for listing export."""
-    format: str = Field("json", regex="^(json|csv|xlsx)$", description="Export format")
+    format: str = Field("json", pattern="^(json|csv|xlsx)$", description="Export format")
     filters: Optional[ListingSearchRequest] = Field(None, description="Export filters")
     include_metadata: bool = Field(True, description="Include metadata")
     include_contacts: bool = Field(False, description="Include associated contacts")
@@ -436,7 +436,7 @@ class ListingDuplicateGroup(BaseModel):
 
 class ListingDeduplicationRequest(BaseModel):
     """Request model for deduplication operations."""
-    action: str = Field(..., regex="^(analyze|merge|unmerge|ignore)$", description="Deduplication action")
+    action: str = Field(..., pattern="^(analyze|merge|unmerge|ignore)$", description="Deduplication action")
     listing_ids: List[int] = Field(..., min_items=2, description="List of listing IDs to process")
     keep_original: Optional[bool] = Field(True, description="Keep first listing as original")
     
@@ -474,7 +474,7 @@ class ListingDeduplicationResponse(BaseModel):
 class ListingBulkUpdateRequest(BaseModel):
     """Request model for bulk listing operations."""
     listing_ids: List[int] = Field(..., min_items=1, description="List of listing IDs to update")
-    operation: str = Field(..., regex="^(update_status|add_contacts|update_metadata|delete)$", description="Bulk operation")
+    operation: str = Field(..., pattern="^(update_status|add_contacts|update_metadata|delete)$", description="Bulk operation")
     parameters: Dict[str, Any] = Field(default_factory=dict, description="Operation parameters")
     
     class Config:

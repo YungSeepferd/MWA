@@ -75,7 +75,7 @@ class ScraperRunRequest(BaseModel):
     config_overrides: Optional[Dict[str, Any]] = Field(None, description="Configuration overrides")
     notify_on_completion: bool = Field(True, description="Send notifications on completion")
     job_id: Optional[str] = Field(None, description="Optional job ID for tracking")
-    priority: str = Field("normal", regex="^(low|normal|high|urgent)$", description="Run priority")
+    priority: str = Field("normal", pattern="^(low|normal|high|urgent)$", description="Run priority")
     
     @validator('providers')
     def validate_providers(cls, v):
@@ -345,7 +345,7 @@ class ScraperTestRequest(BaseModel):
     """Request model for testing scraper configuration."""
     providers: List[str] = Field(..., min_items=1, description="Providers to test")
     config_test: Optional[Dict[str, Any]] = Field(None, description="Test configuration")
-    test_type: str = Field("connectivity", regex="^(connectivity|full|dry_run)$", description="Type of test")
+    test_type: str = Field("connectivity", pattern="^(connectivity|full|dry_run)$", description="Type of test")
     max_pages: Optional[int] = Field(None, ge=1, le=100, description="Maximum pages to test")
     
     class Config:
@@ -428,7 +428,7 @@ class PerformanceMetrics(BaseModel):
 class ScraperHealthCheck(BaseModel):
     """Health check results for scraper components."""
     component: str = Field(..., description="Component name")
-    status: str = Field(..., regex="^(healthy|degraded|unhealthy)$", description="Health status")
+    status: str = Field(..., pattern="^(healthy|degraded|unhealthy)$", description="Health status")
     response_time_ms: Optional[float] = Field(None, description="Response time in milliseconds")
     error_message: Optional[str] = Field(None, description="Error message if any")
     last_check: datetime = Field(..., description="Last check timestamp")
@@ -562,7 +562,7 @@ class ScraperError(BaseModel):
     error_type: str = Field(..., description="Error type")
     error_message: str = Field(..., description="Error message")
     context: Dict[str, Any] = Field(default_factory=dict, description="Error context")
-    severity: str = Field(..., regex="^(low|medium|high|critical)$", description="Error severity")
+    severity: str = Field(..., pattern="^(low|medium|high|critical)$", description="Error severity")
     occurred_at: datetime = Field(..., description="When error occurred")
     resolved: bool = Field(False, description="Whether error has been resolved")
     

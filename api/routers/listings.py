@@ -59,7 +59,7 @@ class ListingCreateRequest(BaseModel):
     address: Optional[str] = Field(None, max_length=500)
     description: Optional[str] = Field(None, max_length=2000)
     provider: str = Field(..., min_length=1)
-    status: str = Field("active", regex="^(active|inactive|rented|unavailable)$")
+    status: str = Field("active", pattern="^(active|inactive|rented|unavailable)$")
     metadata: Optional[Dict[str, Any]] = {}
 
 
@@ -69,7 +69,7 @@ class ListingUpdateRequest(BaseModel):
     price: Optional[float] = Field(None, ge=0)
     address: Optional[str] = Field(None, max_length=500)
     description: Optional[str] = Field(None, max_length=2000)
-    status: Optional[str] = Field(None, regex="^(active|inactive|rented|unavailable)$")
+    status: Optional[str] = Field(None, pattern="^(active|inactive|rented|unavailable)$")
     metadata: Optional[Dict[str, Any]] = None
 
 
@@ -77,15 +77,15 @@ class ListingSearchRequest(BaseModel):
     """Request model for listing search."""
     query: Optional[str] = None
     provider: Optional[str] = None
-    status: Optional[str] = Field(None, regex="^(active|inactive|rented|unavailable)$")
+    status: Optional[str] = Field(None, pattern="^(active|inactive|rented|unavailable)$")
     price_min: Optional[float] = Field(None, ge=0)
     price_max: Optional[float] = Field(None, ge=0)
     date_from: Optional[datetime] = None
     date_to: Optional[datetime] = None
     limit: int = Field(50, ge=1, le=1000)
     offset: int = Field(0, ge=0)
-    sort_by: str = Field("created_at", regex="^(created_at|updated_at|price|title)$")
-    sort_order: str = Field("desc", regex="^(asc|desc)$")
+    sort_by: str = Field("created_at", pattern="^(created_at|updated_at|price|title)$")
+    sort_order: str = Field("desc", pattern="^(asc|desc)$")
 
 
 class ListingStatisticsResponse(BaseModel):
@@ -103,7 +103,7 @@ class ListingStatisticsResponse(BaseModel):
 
 class ListingExportRequest(BaseModel):
     """Request model for listing export."""
-    format: str = Field("json", regex="^(json|csv|xlsx)$")
+    format: str = Field("json", pattern="^(json|csv|xlsx)$")
     filters: Optional[ListingSearchRequest] = None
     include_metadata: bool = Field(True)
     include_contacts: bool = Field(False)
@@ -118,15 +118,15 @@ def get_storage_manager_instance():
 @router.get("/", response_model=Dict[str, Any], summary="Get listings with filtering and pagination")
 async def get_listings(
     provider: Optional[str] = Query(None, description="Filter by provider name"),
-    status: Optional[str] = Query(None, regex="^(active|inactive|rented|unavailable)$", description="Filter by status"),
+    status: Optional[str] = Query(None, pattern="^(active|inactive|rented|unavailable)$", description="Filter by status"),
     price_min: Optional[float] = Query(None, ge=0, description="Minimum price filter"),
     price_max: Optional[float] = Query(None, ge=0, description="Maximum price filter"),
     date_from: Optional[datetime] = Query(None, description="Filter listings from this date"),
     date_to: Optional[datetime] = Query(None, description="Filter listings to this date"),
     limit: int = Query(50, ge=1, le=1000, description="Maximum number of results"),
     offset: int = Query(0, ge=0, description="Pagination offset"),
-    sort_by: str = Query("created_at", regex="^(created_at|updated_at|price|title)$", description="Sort field"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+    sort_by: str = Query("created_at", pattern="^(created_at|updated_at|price|title)$", description="Sort field"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     storage_manager = Depends(get_storage_manager_instance)
 ):
     """

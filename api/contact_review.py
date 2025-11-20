@@ -19,7 +19,7 @@ import json
 import csv
 from io import StringIO
 
-from fastapi import FastAPI, HTTPException, Query, Path as FastAPIPath, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Query, Path as FastAPIPath, BackgroundTasks, APIRouter
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -30,7 +30,7 @@ from mwa_core.contact.models import (
 )
 from mwa_core.contact.integration import ContactDiscoveryIntegration
 from mwa_core.contact.validators import ContactValidator, ValidationResult
-from mwa_core.storage.operations import StorageOperations
+from mwa_core.storage.operations import CRUDOperations as StorageOperations
 from mwa_core.storage.models import Contact as StorageContact, ContactValidation, Listing
 from mwa_core.config.settings import Settings, get_settings
 
@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 class ContactReviewRequest(BaseModel):
     """Request model for contact review operations."""
     contact_ids: List[int]
-    action: str = Field(..., regex="^(approve|reject|flag|validate)$")
+    action: str = Field(..., pattern="^(approve|reject|flag|validate)$")
     reason: Optional[str] = None
     confidence_level: Optional[str] = None
 
@@ -48,7 +48,7 @@ class ContactReviewRequest(BaseModel):
 class ContactBulkOperationRequest(BaseModel):
     """Request model for bulk contact operations."""
     contact_ids: List[int]
-    operation: str = Field(..., regex="^(validate|export|delete|merge)$")
+    operation: str = Field(..., pattern="^(validate|export|delete|merge)$")
     parameters: Optional[Dict[str, Any]] = {}
 
 
@@ -69,7 +69,7 @@ class ContactSearchRequest(BaseModel):
 class ContactExportRequest(BaseModel):
     """Request model for contact export."""
     contact_ids: Optional[List[int]] = None
-    format: str = Field("csv", regex="^(csv|json|xlsx)$")
+    format: str = Field("csv", pattern="^(csv|json|xlsx)$")
     include_metadata: bool = True
     include_validation_history: bool = False
 
@@ -662,22 +662,22 @@ class ContactReviewDashboard:
 
 
 # FastAPI router setup
-def create_contact_review_router(settings: Settings) -> FastAPI:
+def create_contact_review_router(settings: Settings) -> APIRouter:
     """
-    Create FastAPI router for contact review endpoints.
+    Create APIRouter for contact review endpoints.
     
     Args:
         settings: Application settings
         
     Returns:
-        FastAPI application with contact review endpoints
+        APIRouter with contact review endpoints
     """
-    app = FastAPI(title="MWA Contact Review API", version="1.0.0")
+    router = APIRouter()
     dashboard = ContactReviewDashboard(settings)
     
-    @app.get("/contacts/review", response_model=Dict[str, Any])
+    @router.get("/contacts/review", response_model=Dict[str, Any])
     async def get_contacts_for_review(
-        status: str = Query("unvalidated", regex="^(unvalidated|valid|invalid|suspicious)$"),
+        status: str = Query("unvalidated", pattern="^(unvalidated|valid|invalid|suspicious)$"),
         confidence_min: float = Query(0.0, ge=0.0, le=1.0),
         limit: int = Query(50, ge=1, le=1000),
         offset: int = Query(0, ge=0)
@@ -699,27 +699,27 @@ def create_contact_review_router(settings: Settings) -> FastAPI:
             'confidence_min': confidence_min
         }
     
-    @app.post("/contacts/review", response_model=Dict[str, Any])
+    @router.post("/contacts/review", response_model=Dict[str, Any])
     async def review_contacts(request: ContactReviewRequest):
         """Review and update contact status."""
         return await dashboard.review_contacts(request)
     
-    @app.post("/contacts/bulk", response_model=Dict[str, Any])
+    @router.post("/contacts/bulk", response_model=Dict[str, Any])
     async def bulk_operation(request: ContactBulkOperationRequest):
         """Perform bulk operations on contacts."""
         return await dashboard.bulk_operation(request)
     
-    @app.post("/contacts/export")
+    @router.post("/contacts/export")
     async def export_contacts(request: ContactExportRequest):
         """Export contacts in various formats."""
         return await dashboard.export_contacts(request)
     
-    @app.get("/contacts/statistics", response_model=ContactStatisticsResponse)
+    @router.get("/contacts/statistics", response_model=ContactStatisticsResponse)
     async def get_statistics():
         """Get comprehensive contact statistics."""
         return dashboard.get_contact_statistics()
     
-    @app.post("/contacts/search", response_model=Dict[str, Any])
+    @router.post("/contacts/search", response_model=Dict[str, Any])
     async def search_contacts(request: ContactSearchRequest):
         """Search contacts with advanced filtering."""
         contacts, total = await dashboard.search_contacts(request)
@@ -732,7 +732,7 @@ def create_contact_review_router(settings: Settings) -> FastAPI:
             'search_params': request.dict(exclude_none=True)
         }
     
-    @app.get("/contacts/{contact_id}", response_model=ContactResponse)
+    @router.get("/contacts/{contact_id}", response_model=ContactResponse)
     async def get_contact(contact_id: int = FastAPIPath(..., gt=0)):
         """Get detailed information about a specific contact."""
         try:
@@ -762,9 +762,9 @@ def create_contact_review_router(settings: Settings) -> FastAPI:
             logger.error(f"Error getting contact {contact_id}: {e}")
             raise HTTPException(status_code=500, detail=f"Error retrieving contact: {str(e)}")
     
-    @app.put("/contacts/{contact_id}/validate", response_model=Dict[str, Any])
+    @router.put("/contacts/{contact_id}/validate", response_model=Dict[str, Any])
     async def validate_contact(contact_id: int = FastAPIPath(..., gt=0),
-                             validation_level: str = Query("standard", regex="^(basic|standard|comprehensive)$")):
+                             validation_level: str = Query("standard", pattern="^(basic|standard|comprehensive)$")):
         """Validate a specific contact."""
         try:
             with dashboard.integration.storage_ops.get_session() as session:
@@ -773,14 +773,14 @@ def create_contact_review_router(settings: Settings) -> FastAPI:
                     raise HTTPException(status_code=404, detail="Contact not found")
                 
                 # Convert to discovery contact
-                                from mwa_core.contact.models import Contact, ContactMethod, ConfidenceLevel
-                                discovery_contact = Contact(
-                                    method=ContactMethod(contact.type),
-                                    value=contact.value,
-                                    confidence=ConfidenceLevel(contact.confidence),
-                                    source_url="manual_validation",
-                                    verification_status=ContactStatus.UNVERIFIED
-                                )
+                from mwa_core.contact.models import Contact, ContactMethod, ConfidenceLevel
+                discovery_contact = Contact(
+                    method=ContactMethod(contact.type),
+                    value=contact.value,
+                    confidence=ConfidenceLevel(contact.confidence),
+                    source_url="manual_validation",
+                    verification_status=ContactStatus.UNVERIFIED
+                )
                 
                 # Run validation
                 validation_result = await dashboard.validator.validate_contact(discovery_contact, validation_level)
@@ -822,7 +822,7 @@ def create_contact_review_router(settings: Settings) -> FastAPI:
             logger.error(f"Error validating contact {contact_id}: {e}")
             raise HTTPException(status_code=500, detail=f"Error validating contact: {str(e)}")
     
-    @app.post("/contacts/discover", response_model=Dict[str, Any])
+    @router.post("/contacts/discover", response_model=Dict[str, Any])
     async def discover_contacts_for_listing(
         listing_id: int = Query(..., gt=0),
         enable_crawling: bool = Query(True),
@@ -861,7 +861,7 @@ def create_contact_review_router(settings: Settings) -> FastAPI:
             logger.error(f"Error discovering contacts for listing {listing_id}: {e}")
             raise HTTPException(status_code=500, detail=f"Error discovering contacts: {str(e)}")
     
-    @app.get("/dashboard/overview", response_model=Dict[str, Any])
+    @router.get("/dashboard/overview", response_model=Dict[str, Any])
     async def get_dashboard_overview():
         """Get dashboard overview data."""
         try:
@@ -905,6 +905,8 @@ def create_contact_review_router(settings: Settings) -> FastAPI:
         except Exception as e:
             logger.error(f"Error getting dashboard overview: {e}")
             raise HTTPException(status_code=500, detail=f"Error getting dashboard overview: {str(e)}")
+    
+    return router
 
 
 # Create the main API application
@@ -928,7 +930,7 @@ def create_contact_review_api(settings: Settings) -> FastAPI:
     
     # Include the contact review router
     contact_router = create_contact_review_router(settings)
-    app.mount("/api/v1/contacts", contact_router)
+    app.include_router(contact_router, prefix="/api/v1/contacts")
     
     @app.get("/")
     async def root():

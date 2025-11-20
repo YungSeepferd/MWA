@@ -90,32 +90,44 @@ class Role(BaseModel):
 
 
 # Default users (in production, this would be in a database)
-DEFAULT_USERS = {
-    "admin": {
-        "username": "admin",
-        "email": "admin@localhost",
-        "full_name": "Administrator",
-        "disabled": False,
-        "roles": ["admin", "user", "read-only"],
-        "hashed_password": pwd_context.hash("admin123")  # Change this in production
-    },
-    "user": {
-        "username": "user",
-        "email": "user@localhost", 
-        "full_name": "Regular User",
-        "disabled": False,
-        "roles": ["user", "read-only"],
-        "hashed_password": pwd_context.hash("user123")  # Change this in production
-    },
-    "readonly": {
-        "username": "readonly",
-        "email": "readonly@localhost",
-        "full_name": "Read Only User",
-        "disabled": False,
-        "roles": ["read-only"],
-        "hashed_password": pwd_context.hash("readonly123")  # Change this in production
+def get_default_users():
+    """Get default users with hashed passwords."""
+    return {
+        "admin": {
+            "username": "admin",
+            "email": "admin@localhost",
+            "full_name": "Administrator",
+            "disabled": False,
+            "roles": ["admin", "user", "read-only"],
+            "hashed_password": pwd_context.hash("admin123")  # Change this in production
+        },
+        "user": {
+            "username": "user",
+            "email": "user@localhost",
+            "full_name": "Regular User",
+            "disabled": False,
+            "roles": ["user", "read-only"],
+            "hashed_password": pwd_context.hash("user123")  # Change this in production
+        },
+        "readonly": {
+            "username": "readonly",
+            "email": "readonly@localhost",
+            "full_name": "Read Only User",
+            "disabled": False,
+            "roles": ["read-only"],
+            "hashed_password": pwd_context.hash("readonly123")  # Change this in production
+        }
     }
-}
+
+# Lazy initialization of default users
+DEFAULT_USERS = None
+
+def _get_default_users():
+    """Get default users (lazy initialization)."""
+    global DEFAULT_USERS
+    if DEFAULT_USERS is None:
+        DEFAULT_USERS = get_default_users()
+    return DEFAULT_USERS
 
 # Default roles
 DEFAULT_ROLES = {
@@ -172,8 +184,9 @@ def get_password_hash(password: str) -> str:
 
 def get_user(username: str) -> Optional[UserInDB]:
     """Get user by username from in-memory storage."""
-    if username in DEFAULT_USERS:
-        user_data = DEFAULT_USERS[username].copy()
+    users = _get_default_users()
+    if username in users:
+        user_data = users[username].copy()
         return UserInDB(**user_data)
     return None
 

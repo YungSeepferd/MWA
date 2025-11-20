@@ -3,6 +3,7 @@ Enhanced Orchestrator coordinates scraping, persistence, and notifications using
 """
 
 import logging
+import asyncio
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
@@ -74,11 +75,31 @@ class Orchestrator:
 
             # Send notifications for new listings
             if new_count > 0 and self.notification_manager:
-                asyncio.run(self._send_new_listings_notification(new_listings, enabled_providers))
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # If we're in an async context, create a task
+                        asyncio.create_task(self._send_new_listings_notification(new_listings, enabled_providers))
+                    else:
+                        # If we're not in an async context, run it
+                        asyncio.run(self._send_new_listings_notification(new_listings, enabled_providers))
+                except RuntimeError:
+                    # No event loop, run it
+                    asyncio.run(self._send_new_listings_notification(new_listings, enabled_providers))
 
             # Send contact discovery notifications if enabled
             if self.settings.contact_discovery.enabled and self.notification_manager:
-                asyncio.run(self._send_contact_discovery_notifications(listings))
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # If we're in an async context, create a task
+                        asyncio.create_task(self._send_contact_discovery_notifications(listings))
+                    else:
+                        # If we're not in an async context, run it
+                        asyncio.run(self._send_contact_discovery_notifications(listings))
+                except RuntimeError:
+                    # No event loop, run it
+                    asyncio.run(self._send_contact_discovery_notifications(listings))
 
             # Update job status if we created one
             if job_id:
@@ -96,10 +117,26 @@ class Orchestrator:
             
             # Send error notification
             if self.notification_manager:
-                asyncio.run(self._send_error_notification("Scraping Failed", str(e), {
-                    "providers": enabled_providers,
-                    "error_type": type(e).__name__
-                }))
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # If we're in an async context, create a task
+                        asyncio.create_task(self._send_error_notification("Scraping Failed", str(e), {
+                            "providers": enabled_providers,
+                            "error_type": type(e).__name__
+                        }))
+                    else:
+                        # If we're not in an async context, run it
+                        asyncio.run(self._send_error_notification("Scraping Failed", str(e), {
+                            "providers": enabled_providers,
+                            "error_type": type(e).__name__
+                        }))
+                except RuntimeError:
+                    # No event loop, run it
+                    asyncio.run(self._send_error_notification("Scraping Failed", str(e), {
+                        "providers": enabled_providers,
+                        "error_type": type(e).__name__
+                    }))
             
             if job_id:
                 self.storage.update_scraping_job(
