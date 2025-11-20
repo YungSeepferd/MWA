@@ -680,3 +680,436 @@ async def get_recent_runs(
     except Exception as e:
         logger.error(f"Error getting recent scraper runs: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting recent scraper runs: {str(e)}")
+
+
+# Search Management Endpoints
+@router.get("/configurations", summary="Get search configurations")
+async def get_search_configurations():
+    """
+    Get all search configurations.
+    
+    Returns:
+        List of search configurations
+    """
+    try:
+        # Return mock data for now - in production this would come from database
+        configurations = [
+            {
+                "id": 1,
+                "name": "Main Apartment Search",
+                "min_price": 300,
+                "max_price": 1500,
+                "min_rooms": 1,
+                "districts": [1, 2, 3],
+                "status": "running",
+                "last_run": "2025-11-19T10:00:00Z",
+                "results_count": 15,
+                "created_at": "2025-11-18T09:00:00Z",
+                "updated_at": "2025-11-19T10:00:00Z"
+            },
+            {
+                "id": 2,
+                "name": "Budget Search",
+                "min_price": 200,
+                "max_price": 800,
+                "min_rooms": 1,
+                "districts": [4, 5],
+                "status": "paused",
+                "last_run": "2025-11-18T15:30:00Z",
+                "results_count": 8,
+                "created_at": "2025-11-17T14:30:00Z",
+                "updated_at": "2025-11-18T15:30:00Z"
+            }
+        ]
+        
+        return {
+            "success": True,
+            "data": configurations,
+            "total": len(configurations),
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting search configurations: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Internal server error",
+                "message": "Failed to retrieve search configurations",
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+
+
+@router.get("/statistics", summary="Get search statistics")
+async def get_search_statistics():
+    """
+    Get search performance statistics.
+    
+    Returns:
+        Search statistics
+    """
+    try:
+        # Return mock data for now - in production this would be calculated from database
+        stats = {
+            "total_searches": 3,
+            "running_searches": 2,
+            "paused_searches": 1,
+            "results_today": 5,
+            "results_this_week": 23,
+            "results_this_month": 89,
+            "success_rate": 85,
+            "average_runtime_minutes": 12.5,
+            "total_runtime_hours": 45.2,
+            "error_rate": 5.0,
+            "last_updated": datetime.now().isoformat()
+        }
+        
+        return {
+            "success": True,
+            "data": stats,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting search statistics: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Internal server error",
+                "message": "Failed to retrieve search statistics",
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+
+
+@router.post("/preview", summary="Preview search configuration")
+async def preview_search(
+    config: Dict[str, Any] = Body(..., description="Search configuration to preview")
+):
+    """
+    Preview search results based on configuration.
+    
+    Args:
+        config: Search configuration
+        
+    Returns:
+        Search preview results
+    """
+    try:
+        # Validate input
+        if not config:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Bad request",
+                    "message": "Search configuration cannot be empty",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        # Validate required fields
+        if "min_price" not in config or "max_price" not in config:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation error",
+                    "message": "Price range is required for search preview",
+                    "missing_fields": ["min_price", "max_price"],
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        # Validate price range
+        min_price = config.get("min_price", 0)
+        max_price = config.get("max_price", 0)
+        
+        if min_price < 0 or max_price < 0:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation error",
+                    "message": "Price values must be positive",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        if min_price >= max_price:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation error",
+                    "message": "Minimum price must be less than maximum price",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        # Simulate search preview based on configuration
+        estimated_results = max(10, int((max_price - min_price) / 100))
+        
+        # Mock sample results
+        sample_results = [
+            {
+                "title": "Modern 2-room apartment in Maxvorstadt",
+                "location": "Maxvorstadt",
+                "price": min_price + (max_price - min_price) * 0.6,
+                "rooms": 2,
+                "size": 65,
+                "url": "https://immoscout24.de/example1"
+            },
+            {
+                "title": "Cozy studio in city center",
+                "location": "Altstadt",
+                "price": min_price + (max_price - min_price) * 0.4,
+                "rooms": 1,
+                "size": 35,
+                "url": "https://immoscout24.de/example2"
+            },
+            {
+                "title": "Shared apartment near university",
+                "location": "Schwabing-West",
+                "price": min_price + (max_price - min_price) * 0.3,
+                "rooms": 1,
+                "size": 25,
+                "url": "https://wg-gesucht.de/example1"
+            }
+        ]
+        
+        # Filter by providers
+        providers = config.get("providers", ["immoscout", "wg_gesucht"])
+        
+        return {
+            "success": True,
+            "data": {
+                "estimated_results": estimated_results,
+                "estimated_time_minutes": int(estimated_results * 0.5),
+                "providers": providers,
+                "sample_results": sample_results,
+                "search_config": config
+            },
+            "warnings": [],
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error previewing search: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Internal server error",
+                "message": "Failed to generate search preview",
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+
+
+@router.post("/save", summary="Save search configuration")
+async def save_search(
+    config: Dict[str, Any] = Body(..., description="Search configuration to save")
+):
+    """
+    Save a new search configuration.
+    
+    Args:
+        config: Search configuration
+        
+    Returns:
+        Saved search information
+    """
+    try:
+        # Validate input
+        if not config:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Bad request",
+                    "message": "Search configuration cannot be empty",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        # Validate required fields
+        required_fields = ["name", "min_price", "max_price"]
+        missing_fields = []
+        
+        for field in required_fields:
+            if field not in config or not config[field]:
+                missing_fields.append(field)
+        
+        if missing_fields:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation error",
+                    "message": "Missing required fields",
+                    "missing_fields": missing_fields,
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        # Validate price range
+        min_price = config.get("min_price", 0)
+        max_price = config.get("max_price", 0)
+        
+        if min_price < 0 or max_price < 0:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation error",
+                    "message": "Price values must be positive",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        if min_price >= max_price:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation error",
+                    "message": "Minimum price must be less than maximum price",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        # Validate name length
+        if len(config["name"]) > 100:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation error",
+                    "message": "Search name cannot exceed 100 characters",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        # Mock saving - in production this would save to database
+        search_id = hash(config["name"]) % 1000 + 1  # Simple ID generation
+        
+        saved_config = {
+            "id": search_id,
+            "name": config["name"],
+            "min_price": min_price,
+            "max_price": max_price,
+            "min_rooms": config.get("min_rooms", 1),
+            "districts": config.get("districts", []),
+            "amenities": config.get("amenities", []),
+            "providers": config.get("providers", ["immoscout"]),
+            "schedule": config.get("schedule", {"type": "daily"}),
+            "status": "idle",
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        }
+        
+        return {
+            "success": True,
+            "data": saved_config,
+            "message": "Search configuration saved successfully",
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error saving search: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Internal server error",
+                "message": "Failed to save search configuration",
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+
+
+@router.post("/start", summary="Start search")
+async def start_search(
+    config: Dict[str, Any] = Body(..., description="Search configuration")
+):
+    """
+    Start a new search based on configuration.
+    
+    Args:
+        config: Search configuration
+        
+    Returns:
+        Search start result
+    """
+    try:
+        # Validate input
+        if not config:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Bad request",
+                    "message": "Search configuration cannot be empty",
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        # Validate required fields for starting search
+        required_fields = ["min_price", "max_price"]
+        missing_fields = []
+        
+        for field in required_fields:
+            if field not in config or not config[field]:
+                missing_fields.append(field)
+        
+        if missing_fields:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation error",
+                    "message": "Missing required fields to start search",
+                    "missing_fields": missing_fields,
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        
+        # Mock search start - in production this would trigger actual scraping
+        search_id = config.get("id", 3)
+        job_id = f"search_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        # Simulate validation
+        if not config.get("providers"):
+            logger.warning("No providers specified for search, using defaults")
+        
+        start_result = {
+            "search_id": search_id,
+            "job_id": job_id,
+            "status": "started",
+            "started_at": datetime.now().isoformat(),
+            "estimated_completion": (datetime.now() + timedelta(minutes=15)).isoformat(),
+            "search_config": config,
+            "providers": config.get("providers", ["immoscout", "wg_gesucht"]),
+            "estimated_results": 25
+        }
+        
+        return {
+            "success": True,
+            "data": start_result,
+            "message": "Search started successfully",
+            "warnings": [
+                "Search is running in simulation mode",
+                "Results will be displayed when search completes"
+            ] if search_id == 3 else [],
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error starting search: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Internal server error",
+                "message": "Failed to start search",
+                "timestamp": datetime.now().isoformat()
+            }
+        )

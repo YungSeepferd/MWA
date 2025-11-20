@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAFA Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-value {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-indicator.ready {
+            background: #27ae60;
+        }
+
+        .status-indicator.error {
+            background: #e74c3c;
+        }
+
+        .status-indicator.warning {
+            background: #f39c12;
+        }
+
+        .status-indicator.loading {
+            background: #3498db;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .mode-selection {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mode-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .mode-option {
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .mode-option:hover {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+
+        .mode-option.selected {
+            border-color: #3498db;
+            background: #3498db;
+            color: white;
+        }
+
+        .mode-option h3 {
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .mode-option p {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .config-item {
+            margin-bottom: 15px;
+        }
+
+        .config-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .config-item input, .config-item select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .config-item input:focus, .config-item select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .log-section {
+            background: #2c3e50;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-header {
+            color: #ecf0f1;
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-content {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #ecf0f1;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid #3498db;
+        }
+
+        .log-entry.info {
+            border-left-color: #3498db;
+        }
+
+        .log-entry.success {
+            border-left-color: #27ae60;
+        }
+
+        .log-entry.warning {
+            border-left-color: #f39c12;
+        }
+
+        .log-entry.error {
+            border-left-color: #e74c3c;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .redirect-notice {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+            color: #155724;
+        }
+
+        .redirect-notice.active {
+            display: block;
+        }
+
+        .redirect-notice a {
+            color: #155724;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .mode-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🏠</div>
+        <h1>MAFA Launcher</h1>
+        <p class="subtitle">Munich Apartment Finder Assistant</p>
+
+        <div class="status-card">
+            <h2>System Status</h2>
+            <div class="status-item">
+                <span class="status-label">Poetry Environment</span>
+                <div class="status-value">
+                    <span class="status-indicator" id="poetry-status"></span>
+                    <span id="poetry-text">Checking...</span>
+                </div>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Configuration File</span>
+                <div class="status-value">
+                    <span class="status-indicator" id="config-status"></span>
+                    <span id="config-text">Checking...</span>
+                </div>
+            </div>
+            <div class="status-item">
+                <span class="status-label">API Server</span>
+                <div class="status-value">
+                    <span class="status-indicator" id="api-status"></span>
+                    <span id="api-text">Stopped</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mode-selection">
+            <h2>Launch Mode</h2>
+            <div class="mode-options">
+                <div class="mode-option selected" data-mode="dev">
+                    <h3>🚀 Development</h3>
+                    <p>Hot-reload enabled, debug mode</p>
+                </div>
+                <div class="mode-option" data-mode="prod">
+                    <h3>⚡ Production</h3>
+                    <p>Optimized performance, no reload</p>
+                </div>
+                <div class="mode-option" data-mode="dryrun">
+                    <h3>🧪 Dry Run</h3>
+                    <p>Test without database persistence</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h2>Configuration</h2>
+            <div class="config-item">
+                <label for="config-path">Config File Path</label>
+                <input type="text" id="config-path" value="config.json" placeholder="config.json">
+            </div>
+            <div class="config-item">
+                <label for="discord-webhook">Discord Webhook URL (optional)</label>
+                <input type="text" id="discord-webhook" placeholder="https://discord.com/api/webhooks/...">
+            </div>
+            <div class="config-item">
+                <label for="host">Host</label>
+                <input type="text" id="host" value="0.0.0.0">
+            </div>
+            <div class="config-item">
+                <label for="port">Port</label>
+                <input type="number" id="port" value="8000" min="1" max="65535">
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" id="start-btn" onclick="startApplication()">
+                <span id="start-icon">🚀</span>
+                <span id="start-text">Start Application</span>
+            </button>
+            <button class="btn btn-secondary" onclick="checkStatus()">
+                <span>🔄</span>
+                <span>Check Status</span>
+            </button>
+            <button class="btn btn-success" id="open-dashboard-btn" class="hidden" onclick="openDashboard()">
+                <span>📊</span>
+                <span>Open Dashboard</span>
+            </button>
+        </div>
+
+        <div class="progress-bar" id="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="redirect-notice" id="redirect-notice">
+            <strong>✅ Application Started Successfully!</strong><br>
+            Redirecting to dashboard in <span id="countdown">5</span> seconds...<br>
+            <a href="#" onclick="openDashboard(); return false;">Click here to open immediately</a>
+        </div>
+
+        <div class="log-section">
+            <div class="log-header">
+                <span>Application Logs</span>
+                <button onclick="clearLogs()" style="background: none; border: none; color: #ecf0f1; cursor: pointer;">Clear</button>
+            </div>
+            <div class="log-content" id="log-content">
+                <div class="log-entry info">Launcher initialized. Ready to start application.</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>MAFA Launcher v1.0.0 | Munich Apartment Finder Assistant</p>
+            <p>Built with FastAPI & Modern Web Technologies</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedMode = 'dev';
+        let isRunning = false;
+        let statusCheckInterval = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkStatus();
+            setupModeSelection();
+            
+            // Check status every 5 seconds
+            statusCheckInterval = setInterval(checkStatus, 5000);
+        });
+
+        // Setup mode selection
+        function setupModeSelection() {
+            const modeOptions = document.querySelectorAll('.mode-option');
+            modeOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    modeOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedMode = this.dataset.mode;
+                    log(`Mode changed to: ${selectedMode}`, 'info');
+                });
+            });
+        }
+
+        // Check system status
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/launcher/status');
+                const status = await response.json();
+                
+                updateStatusIndicator('poetry-status', status.poetry_ready ? 'ready' : 'error');
+                document.getElementById('poetry-text').textContent = status.poetry_ready ? 'Ready' : 'Not Found';
+                
+                updateStatusIndicator('config-status', status.config_ready ? 'ready' : 'warning');
+                document.getElementById('config-text').textContent = status.config_ready ? 'Found' : 'Not Found';
+                
+                updateStatusIndicator('api-status', status.api_running ? 'ready' : 'error');
+                document.getElementById('api-text').textContent = status.api_running ? 'Running' : 'Stopped';
+                
+                isRunning = status.api_running;
+                updateUI();
+                
+            } catch (error) {
+                updateStatusIndicator('poetry-status', 'error');
+                document.getElementById('poetry-text').textContent = 'Error';
+                updateStatusIndicator('config-status', 'error');
+                document.getElementById('config-text').textContent = 'Error';
+                updateStatusIndicator('api-status', 'error');
+                document.getElementById('api-text').textContent = 'Error';
+            }
+        }
+
+        // Update status indicator
+        function updateStatusIndicator(elementId, status) {
+            const indicator = document.getElementById(elementId);
+            indicator.className = 'status-indicator ' + status;
+        }
+
+        // Start application
+        async function startApplication() {
+            if (isRunning) {
+                log('Application is already running!', 'warning');
+                return;
+            }
+            
+            const startBtn = document.getElementById('start-btn');
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<span>⏳</span><span>Starting...</span>';
+            
+            showProgressBar();
+            log(`Starting application in ${selectedMode} mode...`, 'info');
+            
+            const config = {
+                mode: selectedMode,
+                config_path: document.getElementById('config-path').value,
+                discord_webhook: document.getElementById('discord-webhook').value,
+                host: document.getElementById('host').value,
+                port: parseInt(document.getElementById('port').value)
+            };
+            
+            try {
+                const response = await fetch('/api/launcher/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('Application started successfully!', 'success');
+                    isRunning = true;
+                    updateUI();
+                    startRedirectCountdown();
+                } else {
+                    log(`Failed to start: ${result.error}`, 'error');
+                    hideProgressBar();
+                }
+                
+            } catch (error) {
+                log(`Error starting application: ${error.message}`, 'error');
+                hideProgressBar();
+            } finally {
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<span id="start-icon">🚀</span><span id="start-text">Start Application</span>';
+            }
+        }
+
+        // Show progress bar
+        function showProgressBar() {
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            progressBar.classList.add('active');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+                
+                if (progress >= 90) {
+                    clearInterval(interval);
+                }
+            }, 500);
+        }
+
+        // Hide progress bar
+        function hideProgressBar() {
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            progressBar.classList.remove('active');
+            progressFill.style.width = '0%';
+        }
+
+        // Update UI based on status
+        function updateUI() {
+            const openDashboardBtn = document.getElementById('open-dashboard-btn');
+            const startBtn = document.getElementById('start-btn');
+            
+            if (isRunning) {
+                openDashboardBtn.classList.remove('hidden');
+                startBtn.innerHTML = '<span>✅</span><span>Running</span>';
+                startBtn.disabled = true;
+                hideProgressBar();
+            } else {
+                openDashboardBtn.classList.add('hidden');
+                startBtn.innerHTML = '<span id="start-icon">🚀</span><span id="start-text">Start Application</span>';
+                startBtn.disabled = false;
+            }
+        }
+
+        // Start redirect countdown
+        function startRedirectCountdown() {
+            const redirectNotice = document.getElementById('redirect-notice');
+            const countdown = document.getElementById('countdown');
+            redirectNotice.classList.add('active');
+            
+            let seconds = 5;
+            countdown.textContent = seconds;
+            
+            const interval = setInterval(() => {
+                seconds--;
+                countdown.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    openDashboard();
+                }
+            }, 1000);
+            
+            // Complete progress bar
+            document.getElementById('progress-fill').style.width = '100%';
+        }
+
+        // Open dashboard
+        function openDashboard() {
+            const host = document.getElementById('host').value;
+            const port = document.getElementById('port').value;
+            const url = `http://localhost:${port}`;
+            
+            log(`Opening dashboard at ${url}`, 'info');
+            window.open(url, '_blank');
+        }
+
+        // Log messages
+        function log(message, type = 'info') {
+            const logContent = document.getElementById('log-content');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContent.appendChild(logEntry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        // Clear logs
+        function clearLogs() {
+            const logContent = document.getElementById('log-content');
+            logContent.innerHTML = '<div class="log-entry info">Logs cleared.</div>';
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+        });
+    </script>
+</body>
+</html>

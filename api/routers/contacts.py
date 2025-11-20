@@ -53,28 +53,28 @@ class ContactResponse(BaseModel):
 class ContactCreateRequest(BaseModel):
     """Request model for creating a new contact."""
     listing_id: Optional[int] = Field(None, gt=0)
-    type: str = Field(..., regex="^(email|phone|form|social_media|other)$")
+    type: str = Field(..., pattern="^(email|phone|form|social_media|other)$")
     value: str = Field(..., min_length=1, max_length=500)
     confidence: float = Field(..., ge=0.0, le=1.0)
     source: str = Field(..., min_length=1)
-    status: str = Field("unvalidated", regex="^(unvalidated|valid|invalid|suspicious)$")
+    status: str = Field("unvalidated", pattern="^(unvalidated|valid|invalid|suspicious)$")
     validation_metadata: Optional[Dict[str, Any]] = {}
 
 
 class ContactUpdateRequest(BaseModel):
     """Request model for updating a contact."""
-    type: Optional[str] = Field(None, regex="^(email|phone|form|social_media|other)$")
+    type: Optional[str] = Field(None, pattern="^(email|phone|form|social_media|other)$")
     value: Optional[str] = Field(None, min_length=1, max_length=500)
     confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
-    status: Optional[str] = Field(None, regex="^(unvalidated|valid|invalid|suspicious)$")
+    status: Optional[str] = Field(None, pattern="^(unvalidated|valid|invalid|suspicious)$")
     validation_metadata: Optional[Dict[str, Any]] = None
 
 
 class ContactSearchRequest(BaseModel):
     """Request model for contact search."""
     query: Optional[str] = None
-    contact_type: Optional[str] = Field(None, regex="^(email|phone|form|social_media|other)$")
-    status: Optional[str] = Field(None, regex="^(unvalidated|valid|invalid|suspicious)$")
+    contact_type: Optional[str] = Field(None, pattern="^(email|phone|form|social_media|other)$")
+    status: Optional[str] = Field(None, pattern="^(unvalidated|valid|invalid|suspicious)$")
     confidence_min: Optional[float] = Field(None, ge=0.0, le=1.0)
     confidence_max: Optional[float] = Field(None, ge=0.0, le=1.0)
     listing_id: Optional[int] = Field(None, gt=0)
@@ -82,13 +82,13 @@ class ContactSearchRequest(BaseModel):
     date_to: Optional[datetime] = None
     limit: int = Field(50, ge=1, le=1000)
     offset: int = Field(0, ge=0)
-    sort_by: str = Field("confidence", regex="^(confidence|created_at|updated_at|value)$")
-    sort_order: str = Field("desc", regex="^(asc|desc)$")
+    sort_by: str = Field("confidence", pattern="^(confidence|created_at|updated_at|value)$")
+    sort_order: str = Field("desc", pattern="^(asc|desc)$")
 
 
 class ContactValidationRequest(BaseModel):
     """Request model for contact validation."""
-    validation_level: str = Field("standard", regex="^(basic|standard|comprehensive)$")
+    validation_level: str = Field("standard", pattern="^(basic|standard|comprehensive)$")
     methods: Optional[List[str]] = Field(None, description="Validation methods to use")
 
 
@@ -110,7 +110,7 @@ class ContactStatisticsResponse(BaseModel):
 
 class ContactExportRequest(BaseModel):
     """Request model for contact export."""
-    format: str = Field("json", regex="^(json|csv|xlsx)$")
+    format: str = Field("json", pattern="^(json|csv|xlsx)$")
     filters: Optional[ContactSearchRequest] = None
     include_metadata: bool = Field(True)
     include_validation_history: bool = Field(False)
@@ -124,15 +124,15 @@ def get_storage_manager_instance():
 
 @router.get("/", response_model=Dict[str, Any], summary="Get contacts with filtering and pagination")
 async def get_contacts(
-    contact_type: Optional[str] = Query(None, regex="^(email|phone|form|social_media|other)$", description="Filter by contact type"),
-    status: Optional[str] = Query(None, regex="^(unvalidated|valid|invalid|suspicious)$", description="Filter by contact status"),
+    contact_type: Optional[str] = Query(None, pattern="^(email|phone|form|social_media|other)$", description="Filter by contact type"),
+    status: Optional[str] = Query(None, pattern="^(unvalidated|valid|invalid|suspicious)$", description="Filter by contact status"),
     confidence_min: Optional[float] = Query(None, ge=0.0, le=1.0, description="Minimum confidence filter"),
     confidence_max: Optional[float] = Query(None, ge=0.0, le=1.0, description="Maximum confidence filter"),
     listing_id: Optional[int] = Query(None, gt=0, description="Filter by listing ID"),
     limit: int = Query(50, ge=1, le=1000, description="Maximum number of results"),
     offset: int = Query(0, ge=0, description="Pagination offset"),
-    sort_by: str = Query("confidence", regex="^(confidence|created_at|updated_at|value)$", description="Sort field"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+    sort_by: str = Query("confidence", pattern="^(confidence|created_at|updated_at|value)$", description="Sort field"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     storage_manager = Depends(get_storage_manager_instance)
 ):
     """

@@ -1,0 +1,52 @@
+2025-11-20 01:58:11,305 - __main__ - INFO - 🚀 Starting Chrome Driver and Provider Tests
+2025-11-20 01:58:11,305 - __main__ - INFO - Test started at: 2025-11-20 01:58:11.305478
+2025-11-20 01:58:11,305 - __main__ - INFO - ==================================================
+2025-11-20 01:58:11,305 - __main__ - INFO - Testing configuration loading...
+2025-11-20 01:58:11,305 - __main__ - INFO - ✅ Configuration loaded successfully
+2025-11-20 01:58:11,305 - __main__ - INFO -   Scrapers: ['immoscout', 'wg_gesucht']
+2025-11-20 01:58:11,305 - __main__ - INFO -   Contact discovery enabled: True
+2025-11-20 01:58:11,305 - __main__ - INFO - ==================================================
+2025-11-20 01:58:11,305 - __main__ - INFO - Testing basic Chrome driver...
+2025-11-20 01:58:11,469 - __main__ - ERROR - ❌ Basic driver test failed: cannot import name 'ChromeType' from 'webdriver_manager.core.utils' (/Users/dinz/Library/Caches/pypoetry/virtualenvs/mwa-munchewohnungsassistent-yKXrJ3Xi-py3.10/lib/python3.10/site-packages/webdriver_manager/core/utils.py)
+2025-11-20 01:58:11,469 - __main__ - INFO - ==================================================
+2025-11-20 01:58:11,469 - __main__ - INFO - Testing ImmoScout24 provider...
+2025-11-20 01:58:11,950 - __main__ - ERROR - ❌ ImmoScout provider test failed: cannot import name 'ChromeType' from 'webdriver_manager.core.utils' (/Users/dinz/Library/Caches/pypoetry/virtualenvs/mwa-munchewohnungsassistent-yKXrJ3Xi-py3.10/lib/python3.10/site-packages/webdriver_manager/core/utils.py)
+2025-11-20 01:58:11,950 - __main__ - ERROR - Full traceback: Traceback (most recent call last):
+  File "/Users/dinz/Coding Projects/MWA-MüncheWohnungsAssistent/test_chrome_driver.py", line 61, in test_immoscout_provider
+    from mwa_core.providers.immoscout import ImmoScoutProvider
+  File "/Users/dinz/Coding Projects/MWA-MüncheWohnungsAssistent/mwa_core/__init__.py", line 18, in <module>
+    from .scraper.providers import BaseProvider, ImmoScoutProvider, WgGesuchtProvider
+  File "/Users/dinz/Coding Projects/MWA-MüncheWohnungsAssistent/mwa_core/scraper/providers/__init__.py", line 9, in <module>
+    from .immoscout import ImmoScoutProvider
+  File "/Users/dinz/Coding Projects/MWA-MüncheWohnungsAssistent/mwa_core/scraper/providers/immoscout.py", line 19, in <module>
+    from mafa.driver import SeleniumDriver
+  File "/Users/dinz/Coding Projects/MWA-MüncheWohnungsAssistent/mafa/driver.py", line 21, in <module>
+    from webdriver_manager.core.utils import ChromeType
+ImportError: cannot import name 'ChromeType' from 'webdriver_manager.core.utils' (/Users/dinz/Library/Caches/pypoetry/virtualenvs/mwa-munchewohnungsassistent-yKXrJ3Xi-py3.10/lib/python3.10/site-packages/webdriver_manager/core/utils.py)
+
+2025-11-20 01:58:11,950 - __main__ - INFO - ==================================================
+2025-11-20 01:58:11,950 - __main__ - INFO - Testing WG-Gesucht provider...
+2025-11-20 01:58:11,951 - __main__ - ERROR - ❌ WG-Gesucht provider test failed: cannot import name 'ChromeType' from 'webdriver_manager.core.utils' (/Users/dinz/Library/Caches/pypoetry/virtualenvs/mwa-munchewohnungsassistent-yKXrJ3Xi-py3.10/lib/python3.10/site-packages/webdriver_manager/core/utils.py)
+2025-11-20 01:58:11,951 - __main__ - ERROR - Full traceback: Traceback (most recent call last):
+  File "/Users/dinz/Coding Projects/MWA-MüncheWohnungsAssistent/test_chrome_driver.py", line 99, in test_wg_gesucht_provider
+    from mwa_core.providers.wg_gesucht import WGGesuchtProvider
+  File "/Users/dinz/Coding Projects/MWA-MüncheWohnungsAssistent/mwa_core/__init__.py", line 18, in <module>
+    from .scraper.providers import BaseProvider, ImmoScoutProvider, WgGesuchtProvider
+  File "/Users/dinz/Coding Projects/MWA-MüncheWohnungsAssistent/mwa_core/scraper/providers/__init__.py", line 9, in <module>
+    from .immoscout import ImmoScoutProvider
+  File "/Users/dinz/Coding Projects/MWA-MüncheWohnungsAssistent/mwa_core/scraper/providers/immoscout.py", line 19, in <module>
+    from mafa.driver import SeleniumDriver
+  File "/Users/dinz/Coding Projects/MWA-MüncheWohnungsAssistent/mafa/driver.py", line 21, in <module>
+    from webdriver_manager.core.utils import ChromeType
+ImportError: cannot import name 'ChromeType' from 'webdriver_manager.core.utils' (/Users/dinz/Library/Caches/pypoetry/virtualenvs/mwa-munchewohnungsassistent-yKXrJ3Xi-py3.10/lib/python3.10/site-packages/webdriver_manager/core/utils.py)
+
+2025-11-20 01:58:11,951 - __main__ - INFO - ==================================================
+2025-11-20 01:58:11,951 - __main__ - INFO - TEST SUMMARY
+2025-11-20 01:58:11,951 - __main__ - INFO - ==================================================
+2025-11-20 01:58:11,951 - __main__ - INFO - Configuration Loading: ✅ PASSED
+2025-11-20 01:58:11,952 - __main__ - INFO - Basic Chrome Driver: ❌ FAILED
+2025-11-20 01:58:11,952 - __main__ - INFO - ImmoScout24 Provider: ❌ FAILED
+2025-11-20 01:58:11,952 - __main__ - INFO - WG-Gesucht Provider: ❌ FAILED
+2025-11-20 01:58:11,952 - __main__ - INFO - ==================================================
+2025-11-20 01:58:11,952 - __main__ - INFO - Total: 4 tests | Passed: 1 | Failed: 3
+2025-11-20 01:58:11,952 - __main__ - ERROR - ⚠️  3 test(s) failed. Check the logs for details.

@@ -112,7 +112,7 @@ class ConfigExportRequest(BaseModel):
     """Request model for configuration export."""
     include_sensitive: bool = Field(False, description="Include sensitive data like passwords")
     sections: Optional[List[str]] = Field(None, description="Specific sections to export")
-    format: str = Field("json", regex="^(json|yaml)$", description="Export format")
+    format: str = Field("json", pattern="^(json|yaml)$", description="Export format")
     
     class Config:
         schema_extra = {
@@ -127,7 +127,7 @@ class ConfigExportRequest(BaseModel):
 class ConfigImportRequest(BaseModel):
     """Request model for configuration import."""
     config_data: Dict[str, Any] = Field(..., description="Configuration data to import")
-    merge_strategy: str = Field("replace", regex="^(replace|merge)$", description="Merge strategy")
+    merge_strategy: str = Field("replace", pattern="^(replace|merge)$", description="Merge strategy")
     validate_before_import: bool = Field(True, description="Validate before importing")
     backup_current: bool = Field(True, description="Create backup of current config")
     
@@ -319,7 +319,7 @@ class DatabaseConfig(BaseModel):
 
 class LoggingConfig(BaseModel):
     """Configuration for logging system."""
-    level: str = Field(..., regex="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$", description="Log level")
+    level: str = Field(..., pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$", description="Log level")
     format: str = Field(..., description="Log format string")
     handlers: List[str] = Field(default_factory=list, description="Enabled log handlers")
     file_path: Optional[str] = Field(None, description="Log file path")
@@ -481,7 +481,7 @@ class ConfigValidationRule(BaseModel):
     name: str = Field(..., description="Rule name")
     description: str = Field(..., description="Rule description")
     constraint: ConfigConstraint = Field(..., description="Rule constraint")
-    severity: str = Field(..., regex="^(error|warning|info)$", description="Rule severity")
+    severity: str = Field(..., pattern="^(error|warning|info)$", description="Rule severity")
     
     class Config:
         schema_extra = {

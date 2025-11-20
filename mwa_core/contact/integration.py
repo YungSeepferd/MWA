@@ -25,7 +25,7 @@ from .discovery import ContactDiscoveryEngine
 from .scoring import ContactScoringEngine
 from .validators import ContactValidator, ValidationResult
 from ..storage.models import Contact as StorageContact, ContactValidation as StorageValidation, Listing
-from ..storage.operations import StorageOperations
+from ..storage.operations import CRUDOperations as StorageOperations
 from ..storage.deduplication import DeduplicationEngine
 from ..config.settings import Settings
 
@@ -55,7 +55,7 @@ class ContactDiscoveryIntegration:
         """
         self.config = config
         self.settings = config.contact_discovery
-        self.storage_ops = storage_operations or StorageOperations(config)
+        self.storage_ops = storage_operations or StorageOperations(config.storage.database_schema)
         
         # Initialize discovery engine
         self.discovery_engine = ContactDiscoveryEngine(config)
@@ -63,8 +63,8 @@ class ContactDiscoveryIntegration:
         # Initialize scoring and validation
         self.scoring_engine = ContactScoringEngine(config)
         self.validator = ContactValidator(
-            enable_smtp_verification=self.settings.get('smtp_verification', False),
-            enable_dns_verification=self.settings.get('dns_verification', True),
+            enable_smtp_verification=self.settings.smtp_verification,
+            enable_dns_verification=self.settings.dns_verification,
             rate_limit_seconds=self.settings.rate_limit_seconds
         )
         

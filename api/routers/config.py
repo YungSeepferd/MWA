@@ -56,7 +56,7 @@ class ConfigExportRequest(BaseModel):
 class ConfigImportRequest(BaseModel):
     """Request model for configuration import."""
     config_data: Dict[str, Any] = Field(..., description="Configuration data to import")
-    merge_strategy: str = Field("replace", regex="^(replace|merge)$", description="How to handle existing config")
+    merge_strategy: str = Field("replace", pattern="^(replace|merge)$", description="How to handle existing config")
     validate_before_import: bool = Field(True, description="Validate configuration before importing")
     backup_current: bool = Field(True, description="Create backup of current configuration")
 
@@ -183,6 +183,7 @@ async def update_configuration(
 @router.post("/validate", response_model=ConfigValidationResponse, summary="Validate configuration")
 async def validate_configuration(
     config_data: Optional[Dict[str, Any]] = Body(None, description="Configuration data to validate (null for current)"),
+    validation_level: str = Query("standard", pattern="^(basic|standard|strict)$", description="Validation level"),
     settings: Settings = Depends(get_settings_instance)
 ):
     """
@@ -190,6 +191,7 @@ async def validate_configuration(
     
     Args:
         config_data: Configuration data to validate (uses current if not provided)
+        validation_level: Level of validation to perform
         settings: Settings instance from dependency injection
         
     Returns:
@@ -199,31 +201,133 @@ async def validate_configuration(
         if config_data is None:
             # Validate current configuration
             validation_issues = settings.validate_configuration()
+            warnings = []
+            
+            # Add warnings based on validation level
+            if validation_level in ["standard", "strict"]:
+                # Check for potential issues
+                warnings = _get_configuration_warnings(settings.dict())
+            
             return ConfigValidationResponse(
                 is_valid=len(validation_issues) == 0,
                 issues=validation_issues,
+                warnings=warnings,
                 timestamp=datetime.now()
             )
         else:
             # Validate provided configuration
             try:
-                temp_settings = Settings.parse_obj(config_data)
-                validation_issues = temp_settings.validate_configuration()
+                # Schema validation
+                try:
+                    temp_settings = Settings.parse_obj(config_data)
+                    validation_issues = temp_settings.validate_configuration()
+                except Exception as e:
+                    return ConfigValidationResponse(
+                        is_valid=False,
+                        issues=[f"Configuration schema validation failed: {str(e)}"],
+                        warnings=[],
+                        timestamp=datetime.now()
+                    )
+                
+                # Additional validation based on level
+                warnings = []
+                if validation_level in ["standard", "strict"]:
+                    warnings = _get_configuration_warnings(config_data)
+                
+                # Strict validation for critical issues
+                if validation_level == "strict":
+                    strict_issues = _perform_strict_validation(config_data)
+                    validation_issues.extend(strict_issues)
+                
                 return ConfigValidationResponse(
                     is_valid=len(validation_issues) == 0,
                     issues=validation_issues,
+                    warnings=warnings,
                     timestamp=datetime.now()
                 )
+                
             except Exception as e:
+                logger.error(f"Error in configuration validation: {e}")
                 return ConfigValidationResponse(
                     is_valid=False,
-                    issues=[f"Configuration parsing error: {str(e)}"],
+                    issues=[f"Configuration validation error: {str(e)}"],
+                    warnings=[],
                     timestamp=datetime.now()
                 )
                 
     except Exception as e:
         logger.error(f"Error validating configuration: {e}")
         raise HTTPException(status_code=500, detail=f"Error validating configuration: {str(e)}")
+
+
+def _get_configuration_warnings(config: Dict[str, Any]) -> List[str]:
+    """Generate configuration warnings based on best practices."""
+    warnings = []
+    
+    # Check for missing security settings
+    if not config.get('security'):
+        warnings.append("No security configuration found - consider adding security settings")
+    
+    # Check for reasonable scraper settings
+    scraper_config = config.get('scraper', {})
+    if scraper_config.get('request_delay_seconds', 0) < 1:
+        warnings.append("Request delay is very low - may cause rate limiting")
+    
+    if scraper_config.get('timeout_seconds', 30) < 10:
+        warnings.append("Timeout is very low - may cause frequent timeouts")
+    
+    # Check notification settings
+    notification_config = config.get('notification', {})
+    if not notification_config.get('enabled', False):
+        warnings.append("Notifications are disabled - you won't receive alerts")
+    
+    # Check provider settings
+    provider_configs = config.get('providers', {})
+    enabled_providers = [name for name, provider_config in provider_configs.items()
+                       if provider_config.get('enabled', False)]
+    
+    if not enabled_providers:
+        warnings.append("No apartment providers are enabled - search won't find listings")
+    
+    # Check database settings
+    storage_config = config.get('storage', {})
+    if not storage_config.get('backup_enabled', True):
+        warnings.append("Database backups are disabled - risk of data loss")
+    
+    return warnings
+
+
+def _perform_strict_validation(config: Dict[str, Any]) -> List[str]:
+    """Perform strict validation for critical configuration issues."""
+    issues = []
+    
+    # Check for potential security vulnerabilities
+    security_config = config.get('security', {})
+    
+    # Check for default credentials
+    if security_config.get('secret_key') == 'your-secret-key-here':
+        issues.append("Default secret key detected - must be changed in production")
+    
+    # Check for insecure settings
+    if not security_config.get('secure_cookies', True):
+        issues.append("Secure cookies disabled - security risk in production")
+    
+    # Check for reasonable limits
+    scraper_config = config.get('scraper', {})
+    if scraper_config.get('max_retries', 3) > 10:
+        issues.append("Maximum retries too high - may cause infinite loops")
+    
+    # Check storage configuration
+    storage_config = config.get('storage', {})
+    if storage_config.get('retention_days', 30) < 7:
+        issues.append("Data retention period too short - may lose important data")
+    
+    # Check for reasonable provider timeouts
+    for provider_name, provider_config in config.get('providers', {}).items():
+        if provider_config.get('timeout_seconds', 30) > 120:
+            issues.append(f"Provider {provider_name} timeout too high - may cause performance issues")
+    
+    return issues
 
 
 @router.post("/reset", response_model=ConfigResponse, summary="Reset configuration to defaults")

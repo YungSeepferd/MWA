@@ -258,7 +258,184 @@ Customize application messages using Jinja2 templates:
 - Background scheduler service
 - Periodic scraping runs
 
+## 📚 Documentation & Quality Assurance
+
+### Comprehensive Documentation Suite
+MAFA includes a complete documentation system with automated validation and quality assurance tools.
+
+#### 🚀 Getting Started
+- **[Installation Guide](docs/getting-started/installation.md)** - Step-by-step installation instructions
+- **[Quick Start Guide](docs/getting-started/quick-start.md)** - 5-minute setup to get started
+- **[Configuration Reference](docs/getting-started/configuration.md)** - Complete configuration options
+
+#### 👥 User Guide
+- **[System Overview](docs/user-guide/overview.md)** - Complete overview of MAFA capabilities
+- **[Setup Wizard Guide](docs/user-guide/setup-wizard.md)** - Guided setup process
+- **[Dashboard Manual](docs/user-guide/dashboard.md)** - Using the web dashboard effectively
+- **[User Workflows](docs/user-guide/workflows/)** - Detailed user interaction patterns
+- **[Troubleshooting Guide](docs/user-guide/troubleshooting.md)** - Common issues and solutions
+
+#### 🛠️ Developer Guide
+- **[Development Setup](docs/developer-guide/development-setup.md)** - Setting up development environment
+- **[Contributing Guidelines](docs/developer-guide/contributing.md)** - How to contribute to the project
+- **[Code Style Guide](docs/developer-guide/code-style.md)** - Coding standards and best practices
+- **[API Integration Guide](docs/developer-guide/api/integration-guide.md)** - MAFA API usage and integration
+- **[Testing Guidelines](docs/developer-guide/testing/)** - Comprehensive testing strategies and scenarios
+- **[Documentation Standards](docs/developer-guide/documentation-guidelines.md)** - Documentation guidelines and best practices
+
+#### 🏗️ Architecture Documentation
+- **[System Overview](docs/architecture/system-overview.md)** - High-level system architecture
+- **[Repository Structure](docs/architecture/repository-structure.md)** - Detailed codebase organization
+- **[Database Schema](docs/architecture/database-schema.md)** - Database design and relationships
+- **[Data Models](docs/architecture/data-models.md)** - Entity relationships and validation
+- **[Contact Discovery System](docs/architecture/contact-discovery.md)** - Technical implementation details
+
+#### ⚙️ Operations Manual
+- **[Deployment Guide](docs/operations/deployment.md)** - Production deployment procedures
+- **[Monitoring & Observability](docs/operations/monitoring.md)** - System monitoring and alerting
+- **[Backup & Restore](docs/operations/backup-restore.md)** - Data backup and recovery procedures
+- **[Security Best Practices](docs/operations/security.md)** - Security configuration and monitoring
+
+#### 📋 Project Management
+- **[Development Plan](docs/project/development-plan.md)** - Current development roadmap and planning
+- **[Roadmap](docs/project/roadmap.md)** - Long-term project vision and milestones
+- **[Changelog](docs/project/changelog.md)** - Version history and changes
+- **[Release Notes](docs/project/release-notes.md)** - Detailed release information
+- **[Governance](docs/project/governance.md)** - Project management and decision-making
+- **[Implementation Details](docs/project/implementation/)** - Sprint planning and execution details
+- **[Quality Assurance Reports](docs/project/qa-reports/)** - Comprehensive testing results and analysis
+
+### 📖 Documentation Templates & Examples
+- **[Guide Template](docs/templates/guide-template.md)** - Standard template for documentation guides
+- **[API Reference Template](docs/templates/api-reference-template.md)** - Template for API documentation
+- **[Release Notes Template](docs/templates/release-notes-template.md)** - Template for release documentation
+- **[Markdown Formatting Examples](docs/examples/markdown-examples.md)** - Comprehensive formatting reference
+
+### 🔧 Documentation Quality Assurance Tools
+
+#### Validation Scripts
+Run comprehensive documentation quality checks:
+
+```bash
+# Comprehensive documentation validation
+./scripts/validate-docs.sh
+
+# Check for broken links
+./scripts/check-links.sh
+
+# Validate documentation structure
+./scripts/validate-structure.sh
+
+# Lint markdown files
+./scripts/lint-docs.sh
+
+# Validate document metadata
+./scripts/validate-metadata.sh
+```
+
+#### Maintenance Tools
+- **Update Documentation Indexes**: `./scripts/update-docs-index.sh`
+- **Generate Documentation Statistics**: `./scripts/docs-stats.sh`
+- **Metadata Validation**: `./scripts/validate-metadata.sh`
+
+#### GitHub Actions Workflow
+- **Automated Documentation Testing**: Triggers on documentation changes
+- **Link Validation**: Checks internal and external links
+- **Structure Validation**: Ensures documentation organization
+- **Quality Reports**: Generates comprehensive documentation reports
+- **PR Comments**: Automatic feedback on documentation changes
+
+#### Pre-commit Hooks
+Documentation quality checks run automatically on commits:
+
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run documentation checks manually
+pre-commit run docs-structure-check
+pre-commit run docs-links-check
+pre-commit run docs-lint
+```
+
+### 📊 Documentation Coverage Analysis
+Monitor documentation completeness and quality:
+
+```bash
+# Generate documentation statistics
+./scripts/docs-stats.sh --detailed
+
+# Check documentation coverage
+./scripts/validate-structure.sh --tolerance strict
+
+# Update all documentation indexes
+./scripts/update-docs-index.sh
+```
+
+### 🔄 CI/CD Integration
+Documentation validation is integrated into the development workflow:
+
+- **Pull Request Validation**: Automatic documentation checks on PRs
+- **Schedule Maintenance**: Weekly documentation quality reports
+- **Branch Protection**: Documentation standards enforced via GitHub Actions
+- **Artifact Generation**: Documentation reports available as workflow artifacts
+
+### 📝 Documentation Standards
+All documentation follows strict quality standards:
+
+- **Metadata Requirements**: Consistent frontmatter across all documents
+- **Link Validation**: All internal links verified automatically
+- **Structure Compliance**: Documentation organization follows established patterns
+- **Markdown Quality**: Consistent formatting and style guidelines
+- **Cross-references**: Proper internal linking and navigation
+
+### 🎯 Quick Documentation Access
+
+#### For New Users
+1. **[Quick Start Guide](docs/getting-started/quick-start.md)** - Get started in 5 minutes
+2. **[User Overview](docs/user-guide/overview.md)** - Understand what MAFA does
+3. **[Configuration Guide](docs/getting-started/configuration.md)** - Set up your instance
+
+#### For Developers
+1. **[Development Setup](docs/developer-guide/development-setup.md)** - Set up development environment
+2. **[Contributing Guidelines](docs/developer-guide/contributing.md)** - How to contribute effectively
+3. **[API Integration](docs/developer-guide/api/integration-guide.md)** - Use MAFA APIs programmatically
+
+#### For Operators
+1. **[Deployment Guide](docs/operations/deployment.md)** - Production deployment
+2. **[Monitoring Guide](docs/operations/monitoring.md)** - System observability
+3. **[Security Guidelines](docs/operations/security.md)** - Security best practices
+
+#### For Project Managers
+1. **[Development Plan](docs/project/development-plan.md)** - Current sprint details
+2. **[Roadmap](docs/project/roadmap.md)** - Long-term vision
+3. **[QA Reports](docs/project/qa-reports/)** - Quality assurance metrics
+
+### 📞 Documentation Support
+- **Documentation Issues**: [Report documentation problems](https://github.com/your-org/mafa-docs/issues)
+- **Template Requests**: Request new documentation templates
+- **Style Guide Questions**: Refer to [Documentation Guidelines](docs/developer-guide/documentation-guidelines.md)
+- **Quality Feedback**: Use automated validation tools for immediate feedback
+
+### Legacy Documentation (Deprecated)
+The following sections have been moved to dedicated documentation files:
+- Configuration (see [Configuration Reference](docs/getting-started/configuration.md))
+- Contact Discovery (see [Contact Discovery System](docs/architecture/contact-discovery.md))
+- Development guidelines (see [Developer Guide](docs/developer-guide/))
+
 ## 🤝 Contributing
+
+1. **Read the Documentation**: Review our [Contributing Guidelines](docs/developer-guide/contributing.md)
+2. Fork the repository
+3. Create a feature branch (`git checkout -b feature/amazing-feature`)
+4. Make changes and add tests
+5. Ensure CI passes (`poetry run pytest`)
+6. Update documentation as needed
+7. Commit changes (`git commit -m 'Add amazing feature'`)
+8. Push to branch (`git push origin feature/amazing-feature`)
+9. Open a Pull Request
+
+For detailed contribution guidance, see our [Developer Guide](docs/developer-guide/contributing.md).
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)

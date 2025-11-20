@@ -87,7 +87,7 @@ class ContactDiscoveryEngine:
         self.pdf_extractor = PDFContactExtractor(config)
         
         # Initialize crawler
-        if self.settings.get('smart_crawling', False):
+        if self.settings.smart_crawling:
             self.crawler = SmartContactCrawler(config)
         else:
             self.crawler = ContactCrawler(config)
@@ -95,8 +95,8 @@ class ContactDiscoveryEngine:
         # Initialize scoring and validation
         self.scoring_engine = ContactScoringEngine(config)
         self.validator = ContactValidator(
-            enable_smtp_verification=self.settings.get('smtp_verification', False),
-            enable_dns_verification=self.settings.get('dns_verification', True),
+            enable_smtp_verification=self.settings.smtp_verification,
+            enable_dns_verification=self.settings.dns_verification,
             rate_limit_seconds=self.settings.rate_limit_seconds
         )
         
@@ -104,7 +104,7 @@ class ContactDiscoveryEngine:
         self.discovery_cache = {}
         self.extraction_stats = DiscoveryStats()
         
-        logger.info(f"Contact discovery engine initialized (smart_crawling: {self.settings.get('smart_crawling', False)})")
+        logger.info(f"Contact discovery engine initialized (smart_crawling: {self.settings.smart_crawling})")
     
     async def __aenter__(self):
         """Async context manager entry."""

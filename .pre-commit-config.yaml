@@ -13,6 +13,54 @@ repos:
       - id: debug-statements
       - id: check-docstring-first
 
+  # Documentation validation hooks
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+        files: '^docs/'
+        args: ['--config', 'docs/.markdownlint.json']
+        exclude: 'docs/templates/'
+      - id: markdownlint-fix
+        files: '^docs/'
+        args: ['--config', 'docs/.markdownlint.json', '--fix']
+        exclude: 'docs/templates/'
+
+  - repo: https://github.com/treyhunner/utf
+    rev: v1.1
+    hooks:
+      - id: utf
+        exclude: 'docs/templates/'
+
+  - repo: local
+    hooks:
+      # Documentation structure validation
+      - id: docs-structure-check
+        name: Documentation Structure Check
+        entry: scripts/validate-structure.sh --tolerance lenient --format console
+        language: system
+        pass_filenames: false
+        always_run: true
+        files: '^docs/'
+
+      # Documentation link validation
+      - id: docs-links-check
+        name: Documentation Links Check
+        entry: scripts/check-links.sh --format console --timeout 5
+        language: system
+        pass_filenames: false
+        always_run: true
+        files: '^docs/'
+
+      # Basic documentation linting
+      - id: docs-lint
+        name: Documentation Linting
+        entry: scripts/lint-docs.sh --format console
+        language: system
+        pass_filenames: false
+        always_run: true
+        files: '^docs/'
+
   - repo: https://github.com/psf/black
     rev: 23.7.0
     hooks:

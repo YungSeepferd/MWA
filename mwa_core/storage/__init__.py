@@ -2,7 +2,7 @@
 MWA Core storage system with notification history tracking.
 """
 
-from .manager import StorageManager, get_storage_manager
+from .manager import StorageManager, get_storage_manager, reset_storage_manager, EnhancedStorageManager
 from .models import (
     Listing, 
     Contact, 
@@ -29,7 +29,9 @@ from .notification_history import (
 
 __all__ = [
     'StorageManager',
+    'EnhancedStorageManager',
     'get_storage_manager',
+    'reset_storage_manager',
     'Listing',
     'Contact',
     'ScrapingRun',

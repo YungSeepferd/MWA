@@ -27,7 +27,7 @@ import httpx
 # Import API and MWA Core components
 from api.main import app
 from api.auth import authenticate_user, create_access_token
-from api.websocket.manager import websocket_manager, MessageType, WebSocketMessage
+from api.ws.manager import websocket_manager, MessageType, WebSocketMessage
 from mwa_core.config.settings import get_settings
 from mwa_core.storage.manager import StorageManager
 from mwa_core.orchestrator.orchestrator import Orchestrator

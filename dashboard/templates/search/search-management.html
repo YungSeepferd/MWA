@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Management - MAFA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/dashboard.css" rel="stylesheet">
+    <link href="/static/css/search-management.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-home"></i> MAFA Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard/search">
+                            <i class="fas fa-search"></i> Search Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard/contacts">
+                            <i class="fas fa-address-book"></i> Contacts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard/analytics">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="display-5 fw-bold mb-2">
+                            <i class="fas fa-search me-3"></i>Search Management
+                        </h1>
+                        <p class="lead text-muted">Configure and monitor your apartment search criteria</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary me-2" onclick="createNewSearch()">
+                            <i class="fas fa-plus"></i> New Search
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="importSearch()">
+                            <i class="fas fa-import"></i> Import
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Status Overview -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="card search-overview-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Active Searches
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="searches-grid" id="active-searches-grid">
+                            <!-- Search cards populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card search-stats-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>Search Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-searches">0</div>
+                            <div class="stat-label">Total Searches</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="running-searches">0</div>
+                            <div class="stat-label">Running</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="results-today">0</div>
+                            <div class="stat-label">Results Today</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="success-rate">0%</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Configuration -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card search-config-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>Search Criteria Editor
+                        </h5>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary active" onclick="switchEditorMode('visual')">
+                                <i class="fas fa-eye"></i> Visual
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="switchEditorMode('advanced')">
+                                <i class="fas fa-code"></i> Advanced
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Visual Editor -->
+                        <div id="visual-editor" class="editor-mode active">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="config-section">
+                                        <h6>Price Range</h6>
+                                        <div class="price-range-control">
+                                            <div class="price-inputs">
+                                                <input type="number" class="form-control" id="min-price" placeholder="Min" min="0">
+                                                <span>-</span>
+                                                <input type="number" class="form-control" id="max-price" placeholder="Max" min="0">
+                                            </div>
+                                            <input type="range" class="form-range" id="price-range-slider" min="0" max="5000" step="50">
+                                            <div class="price-display" id="price-display">€0 - €0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="config-section">
+                                        <h6>Room Count</h6>
+                                        <div class="room-selector">
+                                            <div class="btn-group" role="group">
+                                                <input type="radio" class="btn-check" name="rooms" id="rooms-1" value="1">
+                                                <label class="btn btn-outline-primary" for="rooms-1">1</label>
+                                                <input type="radio" class="btn-check" name="rooms" id="rooms-2" value="2">
+                                                <label class="btn btn-outline-primary" for="rooms-2">2</label>
+                                                <input type="radio" class="btn-check" name="rooms" id="rooms-3" value="3">
+                                                <label class="btn btn-outline-primary" for="rooms-3">3</label>
+                                                <input type="radio" class="btn-check" name="rooms" id="rooms-4" value="4">
+                                                <label class="btn btn-outline-primary" for="rooms-4">4+</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="config-section">
+                                        <h6>Munich Districts</h6>
+                                        <div class="district-selection">
+                                            <div class="district-grid" id="district-grid">
+                                                <!-- Districts populated by JavaScript -->
+                                            </div>
+                                            <div class="selected-districts mt-2" id="selected-districts">
+                                                <small class="text-muted">No districts selected</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="config-section">
+                                        <h6>Move-in Date</h6>
+                                        <input type="date" class="form-control" id="move-in-date">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="config-section">
+                                        <h6>Amenities</h6>
+                                        <div class="amenities-grid">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="amenity-balcony">
+                                                <label class="form-check-label" for="amenity-balcony">Balcony</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="amenity-parking">
+                                                <label class="form-check-label" for="amenity-parking">Parking</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="amenity-elevator">
+                                                <label class="form-check-label" for="amenity-elevator">Elevator</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="amenity-garden">
+                                                <label class="form-check-label" for="amenity-garden">Garden</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Editor -->
+                        <div id="advanced-editor" class="editor-mode">
+                            <div class="form-group">
+                                <label for="advanced-query" class="form-label">Advanced Query</label>
+                                <textarea class="form-control" id="advanced-query" rows="10" placeholder="Enter advanced search query..."></textarea>
+                                <div class="form-text">
+                                    Use advanced query syntax for complex searches. <a href="/docs/advanced-search" target="_blank">View syntax guide</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="config-actions mt-4">
+                            <button class="btn btn-outline-secondary me-2" onclick="previewSearch()">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <button class="btn btn-outline-primary me-2" onclick="saveSearch()">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                            <button class="btn btn-primary" onclick="startSearch()">
+                                <i class="fas fa-play"></i> Start Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Search Providers -->
+                <div class="card provider-config-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-globe me-2"></i>Search Providers
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="provider-list">
+                            <div class="provider-item">
+                                <div class="provider-info">
+                                    <h6>Immoscout24</h6>
+                                    <small class="text-muted">Primary German platform</small>
+                                </div>
+                                <div class="provider-controls">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="provider-immoscout" checked>
+                                    </div>
+                                    <small class="text-success">Active</small>
+                                </div>
+                            </div>
+                            <div class="provider-item">
+                                <div class="provider-info">
+                                    <h6>WG-Gesucht</h6>
+                                    <small class="text-muted">Shared accommodation</small>
+                                </div>
+                                <div class="provider-controls">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="provider-wg-gesucht" checked>
+                                    </div>
+                                    <small class="text-success">Active</small>
+                                </div>
+                            </div>
+                            <div class="provider-item">
+                                <div class="provider-info">
+                                    <h6>Immowelt</h6>
+                                    <small class="text-muted">Secondary platform</small>
+                                </div>
+                                <div class="provider-controls">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="provider-immowelt">
+                                    </div>
+                                    <small class="text-muted">Inactive</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Schedule -->
+                <div class="card schedule-config-card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clock me-2"></i>Search Schedule
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="schedule-options">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="schedule" id="schedule-realtime" value="realtime">
+                                <label class="form-check-label" for="schedule-realtime">Real-time</label>
+                                <small class="form-text text-muted">Continuously monitor for new listings</small>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="schedule" id="schedule-hourly" value="hourly">
+                                <label class="form-check-label" for="schedule-hourly">Hourly</label>
+                                <small class="form-text text-muted">Check every hour</small>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="schedule" id="schedule-daily" value="daily" checked>
+                                <label class="form-check-label" for="schedule-daily">Daily</label>
+                                <small class="form-text text-muted">Check once per day</small>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="schedule" id="schedule-custom" value="custom">
+                                <label class="form-check-label" for="schedule-custom">Custom</label>
+                                <small class="form-text text-muted">Set custom schedule</small>
+                            </div>
+                        </div>
+                        <div class="custom-schedule mt-3" id="custom-schedule" style="display: none;">
+                            <div class="form-group">
+                                <label for="custom-interval" class="form-label">Interval (minutes)</label>
+                                <input type="number" class="form-control" id="custom-interval" min="15" max="1440" value="60">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Preview Modal -->
+    <div class="modal fade" id="search-preview-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-search"></i> Search Preview
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="preview-results" id="preview-results">
+                        <!-- Preview results populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmAndStartSearch()">Start Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/search-management.js"></script>
+</body>
+</html>

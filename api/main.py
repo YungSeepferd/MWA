@@ -31,7 +31,7 @@ from api.middleware import (
     SecurityHeadersMiddleware,
     get_production_security_config
 )
-from api.websocket import websocket_router
+from api.ws import websocket_router
 
 
 # Configure logging

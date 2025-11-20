@@ -65,8 +65,8 @@ class JobCreateRequest(BaseModel):
     """Request model for creating a scheduled job."""
     name: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=500)
-    job_type: str = Field(..., regex="^(scraping|cleanup|backup|notification)$")
-    provider: Optional[str] = Field(None, regex="^(immoscout|wg_gesucht|all)$")
+    job_type: str = Field(..., pattern="^(scraping|cleanup|backup|notification)$")
+    provider: Optional[str] = Field(None, pattern="^(immoscout|wg_gesucht|all)$")
     schedule_expression: str = Field(..., description="Cron-style schedule expression")
     enabled: bool = Field(True)
     parameters: Optional[Dict[str, Any]] = {}

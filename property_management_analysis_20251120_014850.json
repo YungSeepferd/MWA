@@ -1,0 +1,205 @@
+{
+  "analysis_summary": {
+    "total_contacts_analyzed": 22,
+    "potential_property_managers_found": 14,
+    "high_confidence_matches": 6,
+    "german_property_management_companies": 5,
+    "analysis_timestamp": "2025-11-20T01:48:50.180410",
+    "confidence_distribution": {
+      "very_high_0.9_1.0": 5,
+      "high_0.7_0.9": 1,
+      "medium_0.5_0.7": 4,
+      "low_0.3_0.5": 4
+    }
+  },
+  "high_confidence_property_managers": [
+    {
+      "id": 1,
+      "type": "email",
+      "value": "info@schmidt-hausverwaltung.de",
+      "confidence": 1.0,
+      "source": "",
+      "company_name": "Schmidthausverwaltung",
+      "business_email": true,
+      "professional_phone": false,
+      "multiple_listings": true,
+      "german_business_terms": true,
+      "verification_count": 3
+    },
+    {
+      "id": 7,
+      "type": "email",
+      "value": "kontakt@immobilienverwaltung-bayern.de",
+      "confidence": 1.0,
+      "source": "",
+      "company_name": "Immobilienverwaltungbayern",
+      "business_email": true,
+      "professional_phone": false,
+      "multiple_listings": true,
+      "german_business_terms": true,
+      "verification_count": 2
+    },
+    {
+      "id": 13,
+      "type": "email",
+      "value": "office@property-management-munich.com",
+      "confidence": 1.0,
+      "source": "",
+      "company_name": "Propertymanagementmunich",
+      "business_email": true,
+      "professional_phone": false,
+      "multiple_listings": true,
+      "german_business_terms": true,
+      "verification_count": 2
+    },
+    {
+      "id": 11,
+      "type": "email",
+      "value": "service@weg-verwaltung-muenchen.de",
+      "confidence": 0.9850000000000001,
+      "source": "",
+      "company_name": "Wegverwaltungmuenchen",
+      "business_email": true,
+      "professional_phone": false,
+      "multiple_listings": false,
+      "german_business_terms": true,
+      "verification_count": 1
+    },
+    {
+      "id": 17,
+      "type": "email",
+      "value": "verwaltung@alpen-immobilien.de",
+      "confidence": 0.9850000000000001,
+      "source": "",
+      "company_name": "Alpenimmobilien",
+      "business_email": true,
+      "professional_phone": false,
+      "multiple_listings": false,
+      "german_business_terms": true,
+      "verification_count": 1
+    },
+    {
+      "id": 2,
+      "type": "phone",
+      "value": "+49 89 12345678",
+      "confidence": 0.77,
+      "source": "",
+      "company_name": null,
+      "business_email": false,
+      "professional_phone": true,
+      "multiple_listings": true,
+      "german_business_terms": false,
+      "verification_count": 3
+    }
+  ],
+  "german_property_management_companies": [
+    {
+      "id": 1,
+      "type": "email",
+      "value": "info@schmidt-hausverwaltung.de",
+      "confidence": 1.0,
+      "company_name": "Schmidthausverwaltung",
+      "business_email": true,
+      "professional_phone": false
+    },
+    {
+      "id": 7,
+      "type": "email",
+      "value": "kontakt@immobilienverwaltung-bayern.de",
+      "confidence": 1.0,
+      "company_name": "Immobilienverwaltungbayern",
+      "business_email": true,
+      "professional_phone": false
+    },
+    {
+      "id": 13,
+      "type": "email",
+      "value": "office@property-management-munich.com",
+      "confidence": 1.0,
+      "company_name": "Propertymanagementmunich",
+      "business_email": true,
+      "professional_phone": false
+    },
+    {
+      "id": 11,
+      "type": "email",
+      "value": "service@weg-verwaltung-muenchen.de",
+      "confidence": 0.9850000000000001,
+      "company_name": "Wegverwaltungmuenchen",
+      "business_email": true,
+      "professional_phone": false
+    },
+    {
+      "id": 17,
+      "type": "email",
+      "value": "verwaltung@alpen-immobilien.de",
+      "confidence": 0.9850000000000001,
+      "company_name": "Alpenimmobilien",
+      "business_email": true,
+      "professional_phone": false
+    }
+  ],
+  "detailed_analysis": {
+    "business_contact_statistics": {
+      "total_contacts": 22,
+      "by_type": {
+        "email": 11,
+        "phone": 11
+      },
+      "confidence_ranges": {
+        "high_0.8_1.0": 22,
+        "medium_0.5_0.8": 0,
+        "low_0.0_0.5": 0
+      },
+      "unique_values": 14,
+      "validation_status": {
+        "1": 22
+      }
+    },
+    "source_analysis": {
+      "validated": {
+        "count": 22,
+        "avg_confidence": 0.9068181818181821,
+        "types": {
+          "email": 11,
+          "phone": 11
+        }
+      }
+    },
+    "recommendations": [
+      "Found 6 high-confidence property management contacts",
+      "Identified 5 German property management companies"
+    ]
+  },
+  "methodology": {
+    "confidence_scoring": "Multi-factor scoring based on business indicators",
+    "german_terms_matched": [
+      "hausverwaltung",
+      "hausverwaltungen",
+      "immobilienverwaltung",
+      "weg-verwaltung",
+      "verwaltung",
+      "immobilien",
+      "property management",
+      "gmbh",
+      "ag",
+      "kgaa",
+      "ug",
+      "limited",
+      "unternehmen"
+    ],
+    "business_email_patterns": [
+      "business",
+      "company",
+      "enterprise",
+      "office",
+      "service",
+      "management",
+      "immobilien",
+      "property",
+      "realestate"
+    ],
+    "minimum_confidence_threshold": 0.3,
+    "high_confidence_threshold": 0.7
+  }
+}

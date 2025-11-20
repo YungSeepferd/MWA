@@ -1,0 +1,34 @@
+{
+  "personal_profile": {
+    "my_full_name": "QA Test User",
+    "my_profession": "Software Engineer",
+    "my_employer": "QA Testing Corp",
+    "net_household_income_monthly": 4500,
+    "total_occupants": 2,
+    "intro_paragraph": "I am a QA engineer testing this application. I have stable income and excellent references."
+  },
+  "search_criteria": {
+    "max_price": 1500,
+    "min_rooms": 2,
+    "zip_codes": ["80331", "80333", "80335"]
+  },
+  "notification": {
+    "provider": "discord",
+    "discord_webhook_url": "https://discord.com/api/webhooks/test/test"
+  },
+  "scrapers": ["immoscout", "wg_gesucht"],
+  "contact_discovery": {
+    "enabled": true,
+    "confidence_threshold": "medium",
+    "validation_enabled": true,
+    "rate_limit_seconds": 1.0,
+    "max_crawl_depth": 2,
+    "blocked_domains": ["example.com", "test.com"],
+    "preferred_contact_methods": ["email", "phone", "form"]
+  },
+  "storage": {
+    "contact_retention_days": 90,
+    "auto_cleanup_enabled": true,
+    "backup_enabled": true
+  }
+}

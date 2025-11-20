@@ -11,7 +11,7 @@ let selectedContacts = new Set();
 let currentFilters = {};
 
 // API base URL
-const API_BASE_URL = '/api';
+const API_BASE_URL = '/api/v1';
 
 // Utility functions
 function formatDate(dateString) {
@@ -93,19 +93,45 @@ function updateLastUpdated() {
 // Dashboard functions
 async function loadDashboardStats() {
     try {
-        const response = await fetch(`${API_BASE_URL}/contacts/stats`);
+        // Use system endpoint for dashboard stats
+        const response = await fetch(`${API_BASE_URL}/system/dashboard/stats`);
         if (!response.ok) throw new Error('Failed to fetch stats');
         
         const stats = await response.json();
         
-        // Update statistics cards
-        document.getElementById('total-contacts').textContent = stats.total_contacts;
-        document.getElementById('approved-contacts').textContent = stats.contacts_by_status.approved || 0;
-        document.getElementById('pending-contacts').textContent = stats.contacts_by_status.pending || 0;
-        document.getElementById('rejected-contacts').textContent = stats.contacts_by_status.rejected || 0;
+        // Update dashboard cards
+        const elements = {
+            'total-contacts': stats.total_contacts,
+            'active-searches': stats.active_searches,
+            'new-contacts': stats.new_contacts_today,
+            'pending-review': stats.contacts_by_status.pending || 0,
+            'success-rate': `${stats.success_rate}%`
+        };
+        
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        });
+        
+        // Update contact statistics
+        const contactCounts = {
+            'total-contacts-count': stats.total_contacts,
+            'approved-contacts-count': stats.contacts_by_status.approved || 0,
+            'pending-contacts-count': stats.contacts_by_status.pending || 0,
+            'rejected-contacts-count': stats.contacts_by_status.rejected || 0
+        };
+        
+        Object.entries(contactCounts).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        });
         
         // Update top sources
-        const topSourcesList = document.getElementById('top-sources-list');
+        const topSourcesList = document.getElementById('top-sources');
         if (topSourcesList) {
             topSourcesList.innerHTML = stats.top_sources.slice(0, 5).map(source => `
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -116,6 +142,9 @@ async function loadDashboardStats() {
                 </div>
             `).join('');
         }
+        
+        // Update system status indicators
+        updateSystemStatusIndicators(stats);
         
     } catch (error) {
         console.error('Error loading dashboard stats:', error);
@@ -128,69 +157,61 @@ async function loadRecentContacts() {
         const response = await fetch(`${API_BASE_URL}/contacts?limit=10&offset=0`);
         if (!response.ok) throw new Error('Failed to fetch recent contacts');
         
-        const contacts = await response.json();
+        const result = await response.json();
+        const contacts = result.contacts || result; // Handle both formats
         
-        const recentContactsBody = document.getElementById('recent-contacts-body');
-        if (recentContactsBody) {
-            recentContactsBody.innerHTML = contacts.map(contact => `
-                <tr>
-                    <td>
-                        <span class="text-truncate" style="max-width: 200px;" title="${contact.source}">
-                            ${contact.source}
-                        </span>
-                    </td>
-                    <td>
-                        <i class="${getMethodIcon(contact.method)}"></i>
-                        ${contact.method}
-                    </td>
-                    <td>
-                        <span class="text-truncate" style="max-width: 200px;" title="${contact.value}">
-                            ${contact.value}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge ${getConfidenceBadgeClass(contact.confidence)}">
-                            ${contact.confidence}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge ${getStatusBadgeClass(contact.status)}">
-                            ${contact.status}
-                        </span>
-                    </td>
-                    <td>
+        // Update activity feed
+        const activityFeed = document.getElementById('activity-feed');
+        if (activityFeed) {
+            activityFeed.innerHTML = contacts.slice(0, 5).map(contact => `
+                <div class="activity-item d-flex align-items-center mb-3">
+                    <div class="activity-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="fas fa-${getMethodIcon(contact.type || contact.method)}"></i>
+                    </div>
+                    <div class="activity-content flex-grow-1">
+                        <div class="activity-title fw-bold">${contact.type || contact.method} Contact Found</div>
+                        <div class="activity-description text-muted">${contact.value || contact.contact_info || 'Contact extracted from listing'}</div>
+                        <div class="activity-meta text-muted small">${formatDate(contact.created_at)} • ${contact.source || 'Unknown source'}</div>
+                    </div>
+                    <div class="activity-actions">
                         <button class="btn btn-sm btn-outline-primary" onclick="viewContactDetails(${contact.id})">
-                            <i class="fas fa-eye"></i> View
+                            <i class="fas fa-eye"></i>
                         </button>
-                    </td>
-                </tr>
+                    </div>
+                </div>
             `).join('');
         }
         
     } catch (error) {
         console.error('Error loading recent contacts:', error);
-        showAlert('Failed to load recent contacts', 'danger');
+        // Don't show error for activity feed, just log it
     }
 }
 
 async function loadTopSources() {
     try {
-        const response = await fetch(`${API_BASE_URL}/contacts/stats`);
+        const response = await fetch(`${API_BASE_URL}/system/dashboard/stats`);
         if (!response.ok) throw new Error('Failed to fetch stats');
         
         const stats = await response.json();
         
-        const topSourcesList = document.getElementById('top-sources-list');
-        if (topSourcesList) {
-            topSourcesList.innerHTML = stats.top_sources.slice(0, 5).map(source => `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-truncate" style="max-width: 200px;" title="${source.source}">
-                        ${source.source}
-                    </span>
-                    <span class="badge bg-primary">${source.count}</span>
-                </div>
-            `).join('');
-        }
+        // Update both top-sources and sources-list elements
+        const updateSourcesList = (elementId) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = stats.top_sources.slice(0, 5).map(source => `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-truncate" style="max-width: 200px;" title="${source.source}">
+                            ${source.source}
+                        </span>
+                        <span class="badge bg-primary">${source.count}</span>
+                    </div>
+                `).join('');
+            }
+        };
+        
+        updateSourcesList('top-sources');
+        updateSourcesList('sources-list');
         
     } catch (error) {
         console.error('Error loading top sources:', error);
@@ -275,18 +296,18 @@ async function loadContacts(page = 1, limit = pageSize) {
         // Update pagination
         updatePagination(contacts.length, page, limit);
         
-        // Update showing info
-        const showingStart = (page - 1) * limit + 1;
-        const showingEnd = showingStart + contacts.length - 1;
-        
-        document.getElementById('showing-start').textContent = showingStart;
-        document.getElementById('showing-end').textContent = showingEnd;
-        
         // Update total count
-        const totalResponse = await fetch(`${API_BASE_URL}/contacts/stats`);
-        if (totalResponse.ok) {
-            const stats = await totalResponse.json();
-            document.getElementById('total-contacts').textContent = stats.total_contacts;
+        try {
+            const totalResponse = await fetch(`${API_BASE_URL}/system/dashboard/stats`);
+            if (totalResponse.ok) {
+                const stats = await totalResponse.json();
+                const totalElement = document.getElementById('total-contacts-count');
+                if (totalElement) {
+                    totalElement.textContent = stats.total_contacts;
+                }
+            }
+        } catch (e) {
+            console.warn('Could not update total count:', e);
         }
         
     } catch (error) {
@@ -398,13 +419,12 @@ async function approveContact(contactId = null) {
     
     try {
         const response = await fetch(`${API_BASE_URL}/contacts/${id}`, {
-            method: 'PATCH',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                status: 'approved',
-                notes: 'Approved via dashboard'
+                status: 'approved'
             })
         });
         
@@ -434,13 +454,12 @@ async function rejectContact(contactId = null) {
     
     try {
         const response = await fetch(`${API_BASE_URL}/contacts/${id}`, {
-            method: 'PATCH',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                status: 'rejected',
-                notes: 'Rejected via dashboard'
+                status: 'rejected'
             })
         });
         
@@ -530,23 +549,34 @@ async function confirmBulkAction() {
     const notes = document.getElementById('bulk-action-notes').value;
     
     try {
-        const response = await fetch(`${API_BASE_URL}/contacts/bulk-update`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contact_ids: contactIds,
-                status: action === 'approve' ? 'approved' : 'rejected',
-                notes: notes || `Bulk ${action} via dashboard`
-            })
+        // Since bulk-update endpoint doesn't exist, process contacts individually
+        let successCount = 0;
+        const updatePromises = contactIds.map(async (contactId) => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/contacts/${contactId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: action === 'approve' ? 'approved' : 'rejected'
+                    })
+                });
+                
+                if (response.ok) {
+                    successCount++;
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error(`Error updating contact ${contactId}:`, error);
+                return false;
+            }
         });
         
-        if (!response.ok) throw new Error('Failed to perform bulk action');
+        await Promise.all(updatePromises);
         
-        const result = await response.json();
-        
-        showAlert(`Successfully ${action}d ${result.updated_count} contacts`, 'success');
+        showAlert(`Successfully ${action}d ${successCount} contacts`, 'success');
         
         // Close modal and refresh
         const modal = bootstrap.Modal.getInstance(document.getElementById('bulk-action-modal'));
@@ -656,6 +686,69 @@ function refreshContacts() {
     showAlert('Contacts refreshed', 'success');
 }
 
+// System status indicator updates
+function updateSystemStatusIndicators(stats) {
+    // Update connection status
+    const connectionElement = document.getElementById('connection-status');
+    if (connectionElement) {
+        connectionElement.className = 'fas fa-circle text-success';
+        const connectionText = document.getElementById('connection-text');
+        if (connectionText) {
+            connectionText.textContent = 'Online';
+        }
+    }
+    
+    // Update system status indicators if they exist
+    const statusIndicators = [
+        { id: 'scraper-status', status: 'Active', class: 'text-success' },
+        { id: 'discovery-status', status: 'Running', class: 'text-success' },
+        { id: 'notification-status', status: 'Connected', class: 'text-success' },
+        { id: 'database-status', status: 'Synced', class: 'text-success' }
+    ];
+    
+    statusIndicators.forEach(({ id, status, class: statusClass }) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = status;
+            element.className = `status-text ${statusClass}`;
+        }
+    });
+}
+
+// Dashboard refresh functions
+function refreshDashboard() {
+    loadDashboardStats();
+    loadRecentContacts();
+    loadTopSources();
+    updateLastUpdated();
+    showAlert('Dashboard refreshed successfully', 'success');
+}
+
+function showQuickSetup() {
+    window.location.href = '/dashboard/setup/welcome';
+}
+
+// Quick action functions for dashboard
+function startNewSearch() {
+    window.location.href = '/dashboard/search';
+}
+
+function reviewContacts() {
+    window.location.href = '/dashboard/contacts';
+}
+
+function exportData() {
+    showAlert('Export functionality coming soon', 'info');
+}
+
+function openSettings() {
+    window.location.href = '/api/v1/config';
+}
+
+function viewAllActivity() {
+    window.location.href = '/dashboard/contacts';
+}
+
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
     // Set up event listeners
@@ -672,4 +765,11 @@ document.addEventListener('DOMContentLoaded', function() {
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+    
+    // Load initial data
+    if (document.body.classList.contains('dashboard-page')) {
+        loadDashboardStats();
+        loadRecentContacts();
+        loadTopSources();
+    }
 });

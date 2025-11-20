@@ -10,100 +10,25 @@
   "search_criteria": {
     "max_price": 1500,
     "min_rooms": 2,
-    "zip_codes": [
-      "80331",
-      "80333",
-      "80335",
-      "80469",
-      "80538"
-    ]
+    "zip_codes": ["80331", "80333", "80335", "80469", "80538"]
   },
   "notification": {
     "provider": "discord",
     "discord_webhook_url": "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
   },
-  "scrapers": [
-    "immoscout",
-    "wg_gesucht"
-  ],
+  "scrapers": ["immoscout", "wg_gesucht"],
   "contact_discovery": {
     "enabled": true,
     "confidence_threshold": "medium",
     "validation_enabled": true,
     "rate_limit_seconds": 1.0,
     "max_crawl_depth": 2,
-    "blocked_domains": [
-      "example.com",
-      "test.com"
-    ],
-    "preferred_contact_methods": [
-      "email",
-      "phone",
-      "form"
-    ]
+    "blocked_domains": ["example.com", "test.com"],
+    "preferred_contact_methods": ["email", "phone", "form"]
   },
   "storage": {
     "contact_retention_days": 90,
     "auto_cleanup_enabled": true,
     "backup_enabled": true
-  },
-  "ocr": {
-    "enabled": true,
-    "languages": [
-      "deu",
-      "eng"
-    ],
-    "confidence_threshold": 0.7,
-    "preprocessing": {
-      "enhance_contrast": true,
-      "denoise": true,
-      "sharpen": true
-    },
-    "max_image_size_mb": 10,
-    "supported_formats": [
-      "png",
-      "jpg",
-      "jpeg",
-      "webp",
-      "bmp",
-      "tiff"
-    ]
-  },
-  "pdf": {
-    "enabled": true,
-    "max_file_size_mb": 10,
-    "extract_tables": true,
-    "extract_metadata": true,
-    "confidence_threshold": 0.7,
-    "ocr_fallback": true,
-    "supported_formats": [
-      "pdf"
-    ]
-  },
-  "javascript_rendering": {
-    "enabled": true,
-    "timeout_seconds": 30,
-    "wait_for_load": true,
-    "block_resources": [
-      "image",
-      "stylesheet",
-      "font",
-      "media"
-    ],
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "viewport": {
-      "width": 1920,
-      "height": 1080
-    },
-    "headless": true,
-    "confidence_threshold": 0.7
-  },
-  "dashboard": {
-    "enabled": true,
-    "host": "0.0.0.0",
-    "port": 8080,
-    "require_auth": false,
-    "auto_refresh_seconds": 30,
-    "page_size": 50
   }
 }

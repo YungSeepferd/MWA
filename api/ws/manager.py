@@ -19,7 +19,7 @@ import uuid
 
 from fastapi import WebSocket, WebSocketDisconnect, Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import jwt
+from jose import jwt
 
 from mwa_core.config.settings import get_settings
 
@@ -45,6 +45,12 @@ class MessageType(Enum):
     PONG = "pong"
     DASHBOARD_UPDATE = "dashboard_update"
     JOB_STATUS = "job_status"
+    ANALYTICS_UPDATE = "analytics_update"
+    SETUP_WIZARD_UPDATE = "setup_wizard_update"
+    PROGRESS_UPDATE = "progress_update"
+    SEARCH_STATUS = "search_status"
+    CONFIGURATION_UPDATE = "configuration_update"
+    CONTACT_UPDATE = "contact_update"
 
 
 class WebSocketMessage:
@@ -151,7 +157,7 @@ class WebSocketManager:
         
         # Authentication
         self.security = HTTPBearer()
-        self.jwt_secret = get_settings().secret_key
+        self.jwt_secret = get_settings().security.secret_key
         
         # Heartbeat and cleanup
         self.heartbeat_interval = 30  # seconds
@@ -407,9 +413,169 @@ class WebSocketManager:
     
     async def _handle_dashboard_update(self, connection: WebSocketConnection, message: WebSocketMessage):
         """Handle dashboard-specific update messages."""
-        # Implementation for dashboard updates
-        # This could trigger real-time data refreshes, statistics updates, etc.
-        pass
+        # Handle dashboard-specific updates
+        if message.data.get('action') == 'refresh_stats':
+            # Broadcast updated statistics to dashboard room
+            await self.broadcast_dashboard_stats()
+        elif message.data.get('action') == 'update_progress':
+            # Broadcast progress updates
+            await self.send_to_room("dashboard", WebSocketMessage(
+                message_type=MessageType.PROGRESS_UPDATE,
+                data=message.data.get('progress_data', {})
+            ))
+    
+    async def broadcast_dashboard_stats(self):
+        """Broadcast updated dashboard statistics."""
+        try:
+            # Get current dashboard stats
+            from api.routers.system import generate_mock_dashboard_stats
+            stats = generate_mock_dashboard_stats()
+            
+            message = WebSocketMessage(
+                message_type=MessageType.DASHBOARD_UPDATE,
+                data={
+                    "type": "stats_update",
+                    "stats": stats.dict(),
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+            
+            await self.send_to_room("dashboard", message)
+        except Exception as e:
+            logger.error(f"Error broadcasting dashboard stats: {e}")
+    
+    async def broadcast_contact_discovery_update(self, contact_data: Dict[str, Any]):
+        """Broadcast contact discovery updates."""
+        message = WebSocketMessage(
+            message_type=MessageType.CONTACT_DISCOVERY,
+            data={
+                "new_contacts": contact_data.get("new_contacts", 0),
+                "source": contact_data.get("source", "unknown"),
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+        
+        await self.send_to_room("contacts", message)
+        await self.send_to_room("dashboard", message)
+    
+    async def broadcast_scraper_progress(self, progress_data: Dict[str, Any]):
+        """Broadcast scraper progress updates."""
+        message = WebSocketMessage(
+            message_type=MessageType.SCRAPER_UPDATE,
+            data={
+                "job_id": progress_data.get("job_id"),
+                "status": progress_data.get("status"),
+                "progress": progress_data.get("progress", 0),
+                "estimated_completion": progress_data.get("estimated_completion"),
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+        
+        await self.send_to_room("scraper", message)
+        await self.send_to_room("dashboard", message)
+    
+    async def broadcast_search_status_update(self, search_data: Dict[str, Any]):
+        """Broadcast search status updates."""
+        message = WebSocketMessage(
+            message_type=MessageType.SEARCH_STATUS,
+            data={
+                "search_id": search_data.get("search_id"),
+                "status": search_data.get("status"),
+                "results_count": search_data.get("results_count", 0),
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+        
+        await self.send_to_room("search", message)
+        await self.send_to_room("dashboard", message)
+    
+    async def broadcast_configuration_update(self, config_data: Dict[str, Any]):
+        """Broadcast configuration updates."""
+        message = WebSocketMessage(
+            message_type=MessageType.CONFIGURATION_UPDATE,
+            data={
+                "section": config_data.get("section"),
+                "changes": config_data.get("changes", {}),
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+        
+        await self.broadcast(message)
+    
+    async def broadcast_analytics_update(self, analytics_data: Dict[str, Any]):
+        """Broadcast analytics updates."""
+        message = WebSocketMessage(
+            message_type=MessageType.ANALYTICS_UPDATE,
+            data={
+                "timeframe": analytics_data.get("timeframe"),
+                "updates": analytics_data.get("updates", {}),
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+        
+        await self.send_to_room("analytics", message)
+        await self.send_to_room("dashboard", message)
+    
+    async def broadcast_setup_wizard_progress(self, progress_data: Dict[str, Any]):
+        """Broadcast setup wizard progress."""
+        message = WebSocketMessage(
+            message_type=MessageType.SETUP_WIZARD_UPDATE,
+            data={
+                "step": progress_data.get("step"),
+                "progress": progress_data.get("progress", 0),
+                "completed": progress_data.get("completed", False),
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+        
+        await self.send_to_room("setup", message)
+        await self.send_to_room("dashboard", message)
+    
+    async def broadcast_job_progress(self, job_data: Dict[str, Any]):
+        """Broadcast background job progress updates."""
+        message = WebSocketMessage(
+            message_type=MessageType.PROGRESS_UPDATE,
+            data={
+                "job_id": job_data.get("job_id"),
+                "job_type": job_data.get("job_type"),
+                "status": job_data.get("status"),
+                "progress": job_data.get("progress", 0),
+                "current_step": job_data.get("current_step"),
+                "total_steps": job_data.get("total_steps"),
+                "estimated_completion": job_data.get("estimated_completion"),
+                "results": job_data.get("results", {}),
+                "error": job_data.get("error"),
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+        
+        # Send to relevant rooms based on job type
+        rooms = ["dashboard"]
+        if job_data.get("job_type") == "scraper":
+            rooms.extend(["search", "scraper"])
+        elif job_data.get("job_type") == "contact_discovery":
+            rooms.extend(["contacts", "search"])
+        
+        for room in rooms:
+            await self.send_to_room(room, message)
+    
+    async def broadcast_system_health(self, health_data: Dict[str, Any]):
+        """Broadcast system health updates."""
+        message = WebSocketMessage(
+            message_type=MessageType.SYSTEM_STATUS,
+            data={
+                "status": health_data.get("status", "healthy"),
+                "cpu_usage": health_data.get("cpu_usage", 0),
+                "memory_usage": health_data.get("memory_usage", 0),
+                "disk_usage": health_data.get("disk_usage", 0),
+                "active_jobs": health_data.get("active_jobs", 0),
+                "pending_jobs": health_data.get("pending_jobs", 0),
+                "failed_jobs": health_data.get("failed_jobs", 0),
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+        
+        await self.broadcast(message)
     
     async def _heartbeat_task(self):
         """Background task for heartbeat and connection health."""

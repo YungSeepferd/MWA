@@ -15,9 +15,10 @@ import json
 from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock
 from datetime import datetime
+from urllib.parse import urlparse
 
 from mwa_core.contact.models import (
-    Contact, ContactForm, SocialMediaProfile, DiscoveryContext, 
+    Contact, ContactForm, SocialMediaProfile, DiscoveryContext,
     ConfidenceLevel, ContactStatus, ContactMethod, SocialMediaPlatform
 )
 from mwa_core.contact.discovery import ContactDiscoveryEngine, DiscoveryStats
@@ -28,6 +29,20 @@ from mwa_core.contact.scoring import ContactScoringEngine
 from mwa_core.contact.validators import ContactValidator, ValidationResult
 from mwa_core.contact.integration import ContactDiscoveryIntegration
 from mwa_core.config.settings import Settings
+
+
+def _is_domain_in_allowed_domains(domain: str, allowed_domains: list) -> bool:
+    """Check if domain is in allowed domains list."""
+    return any(d == domain for d in allowed_domains)
+
+
+def _is_xing_url(url: str) -> bool:
+    """Check if URL is a valid XING URL."""
+    try:
+        parsed = urlparse(url)
+        return parsed.hostname in ['xing.com', 'www.xing.com']
+    except Exception:
+        return False
 
 
 class TestContactModels:
@@ -137,7 +152,7 @@ class TestContactModels:
         assert context.max_depth == 3
         assert context.current_depth == 1
         assert context.can_crawl_deeper
-        assert "example.com" in context.allowed_domains
+        assert self._is_domain_in_allowed_domains("example.com", context.allowed_domains)
 
 
 class TestEmailExtractor:
@@ -1110,7 +1125,7 @@ class TestIntegrationScenarios:
         # Check for German-specific patterns
         german_emails = [c for c in result.contacts if c.method == ContactMethod.EMAIL and '.de' in c.value]
         munich_phones = [c for c in result.contacts if c.method == ContactMethod.PHONE and '089' in c.value]
-        german_social = [c for c in result.contacts if c.method == ContactMethod.SOCIAL_MEDIA and 'xing.com' in c.value]
+        german_social = [c for c in result.contacts if c.method == ContactMethod.SOCIAL_MEDIA and self._is_xing_url(c.value)]
         
         assert len(german_emails) > 0
         assert len(munich_phones) > 0
