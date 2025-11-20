@@ -1,0 +1,110 @@
+2025-11-20 02:11:30,845 - __main__ - INFO - 🚀 Starting Chrome Driver and Provider Tests
+2025-11-20 02:11:30,845 - __main__ - INFO - Test started at: 2025-11-20 02:11:30.845919
+2025-11-20 02:11:30,845 - __main__ - INFO - ==================================================
+2025-11-20 02:11:30,845 - __main__ - INFO - Testing configuration loading...
+2025-11-20 02:11:30,846 - __main__ - INFO - ✅ Configuration loaded successfully
+2025-11-20 02:11:30,846 - __main__ - INFO -   Scrapers: ['immoscout', 'wg_gesucht']
+2025-11-20 02:11:30,846 - __main__ - INFO -   Contact discovery enabled: True
+2025-11-20 02:11:30,846 - __main__ - INFO - ==================================================
+2025-11-20 02:11:30,846 - __main__ - INFO - Testing basic Chrome driver...
+2025-11-20 02:11:31,001 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 02:11:31,001 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 02:11:31,140 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:31,141 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:31,141 - WDM - INFO - There is no [mac64] chromedriver "142.0.7444.176" for browser google-chrome "142.0.7444.176" in cache
+2025-11-20 02:11:31,145 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:31,235 - WDM - INFO - WebDriver version 142.0.7444.175 selected
+2025-11-20 02:11:31,238 - WDM - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 02:11:31,238 - WDM - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 02:11:31,387 - WDM - INFO - Driver downloading response is 200
+2025-11-20 02:11:33,239 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:33,330 - WDM - INFO - Driver has been saved in cache [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176]
+2025-11-20 02:11:33,331 - mafa.driver - ERROR - Failed to resolve Chrome driver: name 'os' is not defined
+2025-11-20 02:11:33,331 - mafa.driver - ERROR - Failed to initialize Chrome driver: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:33,331 - __main__ - ERROR - ❌ Basic driver test failed: Chrome driver initialization failed: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:33,331 - __main__ - INFO - ==================================================
+2025-11-20 02:11:33,331 - __main__ - INFO - Testing ImmoScout24 provider...
+2025-11-20 02:11:33,742 - __main__ - INFO - Provider initialized with URL: https://www.immobilienscout24.de/Suche/de/bayern/muenchen/wohnung-mieten
+2025-11-20 02:11:33,742 - mwa_core.providers.immoscout - INFO - ImmoScout scraping attempt 1/2
+2025-11-20 02:11:33,742 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 02:11:33,742 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 02:11:33,895 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:33,895 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:33,895 - WDM - INFO - There is no [mac64] chromedriver "142.0.7444.176" for browser google-chrome "142.0.7444.176" in cache
+2025-11-20 02:11:33,895 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:34,033 - WDM - INFO - WebDriver version 142.0.7444.175 selected
+2025-11-20 02:11:34,036 - WDM - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 02:11:34,036 - WDM - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 02:11:34,087 - WDM - INFO - Driver downloading response is 200
+2025-11-20 02:11:36,094 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:36,177 - WDM - INFO - Driver has been saved in cache [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176]
+2025-11-20 02:11:36,179 - mafa.driver - ERROR - Failed to resolve Chrome driver: name 'os' is not defined
+2025-11-20 02:11:36,179 - mafa.driver - ERROR - Failed to initialize Chrome driver: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:36,179 - mwa_core.providers.immoscout - ERROR - Driver error on attempt 1: Chrome driver initialization failed: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:36,179 - mwa_core.providers.immoscout - INFO - Retrying in 2 seconds...
+2025-11-20 02:11:38,179 - mwa_core.providers.immoscout - INFO - ImmoScout scraping attempt 2/2
+2025-11-20 02:11:38,179 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 02:11:38,179 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 02:11:38,345 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:38,345 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:38,345 - WDM - INFO - There is no [mac64] chromedriver "142.0.7444.176" for browser google-chrome "142.0.7444.176" in cache
+2025-11-20 02:11:38,345 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:38,518 - WDM - INFO - WebDriver version 142.0.7444.175 selected
+2025-11-20 02:11:38,521 - WDM - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 02:11:38,521 - WDM - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 02:11:38,660 - WDM - INFO - Driver downloading response is 200
+2025-11-20 02:11:40,242 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:40,321 - WDM - INFO - Driver has been saved in cache [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176]
+2025-11-20 02:11:40,323 - mafa.driver - ERROR - Failed to resolve Chrome driver: name 'os' is not defined
+2025-11-20 02:11:40,323 - mafa.driver - ERROR - Failed to initialize Chrome driver: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:40,323 - mwa_core.providers.immoscout - ERROR - Driver error on attempt 2: Chrome driver initialization failed: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:40,323 - mwa_core.providers.immoscout - ERROR - All attempts failed. Last error: Chrome driver initialization failed: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:40,323 - __main__ - INFO - ✅ ImmoScout scraping completed: 0 listings found
+2025-11-20 02:11:40,323 - __main__ - INFO - ==================================================
+2025-11-20 02:11:40,323 - __main__ - INFO - Testing WG-Gesucht provider...
+2025-11-20 02:11:40,323 - __main__ - INFO - Provider initialized with URL: https://www.wg-gesucht.de/wg-gesucht/muenchen.html
+2025-11-20 02:11:40,323 - mwa_core.providers.wg_gesucht - INFO - WG-Gesucht scraping attempt 1/2
+2025-11-20 02:11:40,323 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 02:11:40,323 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 02:11:40,488 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:40,489 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:40,489 - WDM - INFO - There is no [mac64] chromedriver "142.0.7444.176" for browser google-chrome "142.0.7444.176" in cache
+2025-11-20 02:11:40,489 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:40,635 - WDM - INFO - WebDriver version 142.0.7444.175 selected
+2025-11-20 02:11:40,638 - WDM - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 02:11:40,638 - WDM - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 02:11:40,689 - WDM - INFO - Driver downloading response is 200
+2025-11-20 02:11:42,188 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:42,277 - WDM - INFO - Driver has been saved in cache [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176]
+2025-11-20 02:11:42,278 - mafa.driver - ERROR - Failed to resolve Chrome driver: name 'os' is not defined
+2025-11-20 02:11:42,278 - mafa.driver - ERROR - Failed to initialize Chrome driver: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:42,278 - mwa_core.providers.wg_gesucht - ERROR - Driver error on attempt 1: Chrome driver initialization failed: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:42,278 - mwa_core.providers.wg_gesucht - INFO - Retrying in 2 seconds...
+2025-11-20 02:11:44,283 - mwa_core.providers.wg_gesucht - INFO - WG-Gesucht scraping attempt 2/2
+2025-11-20 02:11:44,284 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 02:11:44,284 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 02:11:44,472 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:44,473 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:44,473 - WDM - INFO - There is no [mac64] chromedriver "142.0.7444.176" for browser google-chrome "142.0.7444.176" in cache
+2025-11-20 02:11:44,473 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:44,544 - WDM - INFO - WebDriver version 142.0.7444.175 selected
+2025-11-20 02:11:44,546 - WDM - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 02:11:44,546 - WDM - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 02:11:44,598 - WDM - INFO - Driver downloading response is 200
+2025-11-20 02:11:46,141 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 02:11:46,221 - WDM - INFO - Driver has been saved in cache [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176]
+2025-11-20 02:11:46,222 - mafa.driver - ERROR - Failed to resolve Chrome driver: name 'os' is not defined
+2025-11-20 02:11:46,222 - mafa.driver - ERROR - Failed to initialize Chrome driver: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:46,222 - mwa_core.providers.wg_gesucht - ERROR - Driver error on attempt 2: Chrome driver initialization failed: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:46,222 - mwa_core.providers.wg_gesucht - ERROR - All attempts failed. Last error: Chrome driver initialization failed: Chrome driver resolution failed: name 'os' is not defined
+2025-11-20 02:11:46,222 - __main__ - INFO - ✅ WG-Gesucht scraping completed: 0 listings found
+2025-11-20 02:11:46,222 - __main__ - INFO - ==================================================
+2025-11-20 02:11:46,222 - __main__ - INFO - TEST SUMMARY
+2025-11-20 02:11:46,222 - __main__ - INFO - ==================================================
+2025-11-20 02:11:46,222 - __main__ - INFO - Configuration Loading: ✅ PASSED
+2025-11-20 02:11:46,222 - __main__ - INFO - Basic Chrome Driver: ❌ FAILED
+2025-11-20 02:11:46,222 - __main__ - INFO - ImmoScout24 Provider: ❌ FAILED
+2025-11-20 02:11:46,222 - __main__ - INFO - WG-Gesucht Provider: ❌ FAILED
+2025-11-20 02:11:46,223 - __main__ - INFO - ==================================================
+2025-11-20 02:11:46,223 - __main__ - INFO - Total: 4 tests | Passed: 1 | Failed: 3
+2025-11-20 02:11:46,223 - __main__ - ERROR - ⚠️  3 test(s) failed. Check the logs for details.

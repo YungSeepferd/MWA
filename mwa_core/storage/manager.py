@@ -219,13 +219,15 @@ class EnhancedStorageManager:
             return False
     
     def get_contacts(self, listing_id: Optional[int] = None,
-                    contact_type: Optional[str] = None) -> List[Dict[str, Any]]:
+                    contact_type: Optional[str] = None,
+                    limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Get contacts with optional filtering (legacy compatibility).
         
         Args:
             listing_id: Filter by listing ID
             contact_type: Filter by contact type
+            limit: Maximum number of contacts to return (optional)
             
         Returns:
             List of contact dictionaries
@@ -236,7 +238,8 @@ class EnhancedStorageManager:
             
             contacts = self.crud.get_contacts(
                 listing_id=listing_id,
-                contact_type=contact_type_enum
+                contact_type=contact_type_enum,
+                limit=limit
             )
             
             return [contact.to_dict() for contact in contacts]

@@ -1,0 +1,232 @@
+{
+  "timestamp": "2025-11-20T10:35:53.955Z",
+  "version": "1.0",
+  "testSuite": {
+    "contactManagement": {
+      "name": "Contact Management",
+      "priority": "high",
+      "tests": [
+        {
+          "id": "CM-001",
+          "description": "View contact details",
+          "method": "GET",
+          "endpoint": "/api/v1/contacts/{id}",
+          "expectedStatus": 200,
+          "validation": "contact_data_structure"
+        },
+        {
+          "id": "CM-002",
+          "description": "Approve contact",
+          "method": "PUT",
+          "endpoint": "/api/v1/contacts/{id}",
+          "payload": {
+            "status": "approved"
+          },
+          "expectedStatus": 200,
+          "validation": "status_updated"
+        },
+        {
+          "id": "CM-003",
+          "description": "Reject contact",
+          "method": "PUT",
+          "endpoint": "/api/v1/contacts/{id}",
+          "payload": {
+            "status": "rejected"
+          },
+          "expectedStatus": 200,
+          "validation": "status_updated"
+        },
+        {
+          "id": "CM-004",
+          "description": "Bulk approve contacts",
+          "method": "POST",
+          "endpoint": "/api/v1/contacts/bulk-approve",
+          "payload": {
+            "contact_ids": []
+          },
+          "expectedStatus": 200,
+          "validation": "bulk_operation_complete"
+        },
+        {
+          "id": "CM-005",
+          "description": "Export contacts to CSV",
+          "method": "GET",
+          "endpoint": "/api/v1/contacts/export?format=csv",
+          "expectedStatus": 200,
+          "validation": "csv_format_valid"
+        }
+      ]
+    },
+    "dashboardStats": {
+      "name": "Dashboard Statistics",
+      "priority": "high",
+      "tests": [
+        {
+          "id": "DS-001",
+          "description": "Get dashboard stats",
+          "method": "GET",
+          "endpoint": "/api/v1/system/dashboard/stats",
+          "expectedStatus": 200,
+          "validation": "stats_structure_valid"
+        },
+        {
+          "id": "DS-002",
+          "description": "Get recent activity",
+          "method": "GET",
+          "endpoint": "/api/v1/dashboard/activity?limit=10",
+          "expectedStatus": 200,
+          "validation": "activity_list_valid"
+        },
+        {
+          "id": "DS-003",
+          "description": "Get top sources",
+          "method": "GET",
+          "endpoint": "/api/v1/dashboard/sources?limit=5",
+          "expectedStatus": 200,
+          "validation": "sources_list_valid"
+        }
+      ]
+    },
+    "searchManagement": {
+      "name": "Search Management",
+      "priority": "medium",
+      "tests": [
+        {
+          "id": "SM-001",
+          "description": "Get active searches",
+          "method": "GET",
+          "endpoint": "/api/v1/search/active",
+          "expectedStatus": 200,
+          "validation": "searches_list_valid"
+        },
+        {
+          "id": "SM-002",
+          "description": "Start new search",
+          "method": "POST",
+          "endpoint": "/api/v1/search/new",
+          "payload": {
+            "criteria": {}
+          },
+          "expectedStatus": 201,
+          "validation": "search_created"
+        }
+      ]
+    },
+    "analytics": {
+      "name": "Analytics & Reporting",
+      "priority": "medium",
+      "tests": [
+        {
+          "id": "AR-001",
+          "description": "Get performance metrics",
+          "method": "GET",
+          "endpoint": "/api/v1/dashboard/performance?days=7",
+          "expectedStatus": 200,
+          "validation": "performance_data_valid"
+        },
+        {
+          "id": "AR-002",
+          "description": "Get success rate trends",
+          "method": "GET",
+          "endpoint": "/api/v1/analytics/success-rate",
+          "expectedStatus": 200,
+          "validation": "trend_data_valid"
+        }
+      ]
+    },
+    "realTimeFeatures": {
+      "name": "Real-time Features",
+      "priority": "high",
+      "tests": [
+        {
+          "id": "RT-001",
+          "description": "WebSocket connection",
+          "method": "WS",
+          "endpoint": "/ws",
+          "expectedStatus": "connected",
+          "validation": "websocket_handshake"
+        },
+        {
+          "id": "RT-002",
+          "description": "Real-time updates",
+          "method": "WS",
+          "endpoint": "/ws/updates",
+          "expectedStatus": "message_received",
+          "validation": "update_messages"
+        }
+      ]
+    },
+    "systemStatus": {
+      "name": "System Status",
+      "priority": "medium",
+      "tests": [
+        {
+          "id": "SS-001",
+          "description": "System health check",
+          "method": "GET",
+          "endpoint": "/health",
+          "expectedStatus": 200,
+          "validation": "health_status_ok"
+        },
+        {
+          "id": "SS-002",
+          "description": "Service status",
+          "method": "GET",
+          "endpoint": "/api/v1/system/status",
+          "expectedStatus": 200,
+          "validation": "service_status_valid"
+        }
+      ]
+    }
+  },
+  "validationGates": [
+    {
+      "id": "VG-001",
+      "name": "Pre-Migration Baseline",
+      "description": "Establish baseline functionality before migration",
+      "criteria": [
+        "All API endpoints respond with expected status codes",
+        "Core functionality tests pass (contact management, dashboard stats)",
+        "Performance baseline established",
+        "Error rate below 1%"
+      ],
+      "required": true
+    },
+    {
+      "id": "VG-002",
+      "name": "Feature Migration Validation",
+      "description": "Validate each migrated feature",
+      "criteria": [
+        "Zero regression in functionality",
+        "Performance meets or exceeds baseline",
+        "All edge cases handled",
+        "Error handling consistent"
+      ],
+      "required": true
+    },
+    {
+      "id": "VG-003",
+      "name": "Integration Validation",
+      "description": "Validate feature integration",
+      "criteria": [
+        "All features work together seamlessly",
+        "Data consistency maintained",
+        "No race conditions or timing issues",
+        "Cross-feature dependencies validated"
+      ],
+      "required": true
+    },
+    {
+      "id": "VG-004",
+      "name": "User Acceptance",
+      "description": "User acceptance testing",
+      "criteria": [
+        "All user workflows functional",
+        "UI/UX consistency maintained",
+        "Performance acceptable to users",
+        "No data loss or corruption"
+      ],
+      "required": true
+    }
+  ]
+}

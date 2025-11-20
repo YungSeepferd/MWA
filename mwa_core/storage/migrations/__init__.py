@@ -7,6 +7,7 @@ Provides schema migration capabilities with version tracking and rollback suppor
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
@@ -157,12 +158,19 @@ class MigrationManager:
             with self.schema.get_session() as session:
                 migration_module.upgrade(session)
                 
-                # Record migration
+                # Check if version already exists before inserting
                 from sqlalchemy import text
-                session.execute(
-                    text(f"INSERT INTO {self.migrations_table} (version, applied_at) VALUES (:version, :applied_at)"),
-                    {"version": version, "applied_at": datetime.utcnow()}
-                )
+                result = session.execute(
+                    text(f"SELECT version FROM {self.migrations_table} WHERE version = :version"),
+                    {"version": version}
+                ).fetchone()
+                
+                if not result:
+                    # Record migration only if it doesn't exist
+                    session.execute(
+                        text(f"INSERT INTO {self.migrations_table} (version, applied_at) VALUES (:version, :applied_at)"),
+                        {"version": version, "applied_at": datetime.utcnow()}
+                    )
             
             logger.info(f"Successfully applied migration to version {version}")
             return True

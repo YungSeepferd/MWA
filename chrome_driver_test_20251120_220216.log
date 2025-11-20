@@ -1,0 +1,104 @@
+2025-11-20 22:02:16,948 - __main__ - INFO - 🚀 Starting Chrome Driver and Provider Tests
+2025-11-20 22:02:16,948 - __main__ - INFO - Test started at: 2025-11-20 22:02:16.948647
+2025-11-20 22:02:16,948 - __main__ - INFO - ==================================================
+2025-11-20 22:02:16,948 - __main__ - INFO - Testing configuration loading...
+2025-11-20 22:02:16,948 - __main__ - INFO - ✅ Configuration loaded successfully
+2025-11-20 22:02:16,948 - __main__ - INFO -   Scrapers: ['immoscout', 'wg_gesucht']
+2025-11-20 22:02:16,948 - __main__ - INFO -   Contact discovery enabled: True
+2025-11-20 22:02:16,948 - __main__ - INFO - ==================================================
+2025-11-20 22:02:16,948 - __main__ - INFO - Testing basic Chrome driver...
+2025-11-20 22:02:17,085 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 22:02:17,085 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 22:02:17,352 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:02:17,354 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:02:17,354 - WDM - INFO - There is no [mac64] chromedriver "142.0.7444.176" for browser google-chrome "142.0.7444.176" in cache
+2025-11-20 22:02:17,358 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:02:17,493 - WDM - INFO - WebDriver version 142.0.7444.175 selected
+2025-11-20 22:02:17,496 - WDM - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 22:02:17,496 - WDM - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 22:02:17,574 - WDM - INFO - Driver downloading response is 200
+2025-11-20 22:02:19,047 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:02:19,126 - WDM - INFO - Driver has been saved in cache [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176]
+2025-11-20 22:02:19,127 - mafa.driver - INFO - WebDriver Manager returned path: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64/THIRD_PARTY_NOTICES.chromedriver
+2025-11-20 22:02:19,127 - mafa.driver - INFO - Path type: file
+2025-11-20 22:02:19,127 - mafa.driver - INFO - Searching for actual ChromeDriver binary in: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64
+2025-11-20 22:02:19,127 - mafa.driver - INFO - Found actual ChromeDriver binary at: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64/chromedriver
+2025-11-20 22:02:19,127 - mafa.driver - INFO - Found chromedriver at: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64/chromedriver
+2025-11-20 22:02:19,899 - mafa.driver - INFO - Chrome driver initialized successfully
+2025-11-20 22:02:19,900 - __main__ - INFO - ✅ Chrome driver initialized successfully
+2025-11-20 22:02:22,395 - __main__ - INFO - ✅ Successfully navigated to test page: 
+2025-11-20 22:02:22,406 - __main__ - INFO - ✅ Page source retrieved successfully
+2025-11-20 22:02:22,489 - __main__ - INFO - ==================================================
+2025-11-20 22:02:22,489 - __main__ - INFO - Testing ImmoScout24 provider...
+2025-11-20 22:02:22,981 - __main__ - INFO - Provider initialized with URL: https://www.immobilienscout24.de/Suche/de/bayern/muenchen/wohnung-mieten
+2025-11-20 22:02:22,981 - mwa_core.providers.immoscout - INFO - ImmoScout scraping attempt 1/2
+2025-11-20 22:02:22,981 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 22:02:22,982 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 22:02:23,174 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:02:23,174 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:02:23,174 - WDM - INFO - There is no [mac64] chromedriver "142.0.7444.176" for browser google-chrome "142.0.7444.176" in cache
+2025-11-20 22:02:23,174 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:02:23,275 - WDM - INFO - WebDriver version 142.0.7444.175 selected
+2025-11-20 22:02:23,278 - WDM - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 22:02:23,278 - WDM - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 22:02:23,329 - WDM - INFO - Driver downloading response is 200
+2025-11-20 22:02:24,642 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:02:24,719 - WDM - INFO - Driver has been saved in cache [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176]
+2025-11-20 22:02:24,720 - mafa.driver - INFO - WebDriver Manager returned path: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64/THIRD_PARTY_NOTICES.chromedriver
+2025-11-20 22:02:24,720 - mafa.driver - INFO - Path type: file
+2025-11-20 22:02:24,720 - mafa.driver - INFO - Searching for actual ChromeDriver binary in: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64
+2025-11-20 22:02:24,720 - mafa.driver - INFO - Found actual ChromeDriver binary at: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64/chromedriver
+2025-11-20 22:02:24,720 - mafa.driver - INFO - Found chromedriver at: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64/chromedriver
+2025-11-20 22:02:25,361 - mafa.driver - INFO - Chrome driver initialized successfully
+2025-11-20 22:03:26,283 - mwa_core.providers.immoscout - INFO - Found 24 elements with selector: .listing-card
+2025-11-20 22:03:26,283 - mwa_core.providers.immoscout - INFO - Processing 24 listing items
+2025-11-20 22:03:26,623 - mwa_core.providers.immoscout - WARNING - Skipping item 6 - missing title
+2025-11-20 22:03:26,958 - mwa_core.providers.immoscout - WARNING - Skipping item 13 - missing title
+2025-11-20 22:03:27,294 - mwa_core.providers.immoscout - WARNING - Skipping item 20 - missing title
+2025-11-20 22:03:27,510 - mwa_core.providers.immoscout - WARNING - Skipping item 24 - missing title
+2025-11-20 22:03:27,510 - mwa_core.providers.immoscout - INFO - Successfully extracted 20 listings from ImmoScout
+2025-11-20 22:03:27,608 - __main__ - INFO - ✅ ImmoScout scraping completed: 20 listings found
+2025-11-20 22:03:27,608 - __main__ - INFO -   Listing 1: Moderne Einzimmerwohnung mit Balkon im 4. OG in Bogenhausen...
+2025-11-20 22:03:27,608 - __main__ - INFO -     Price: 
+2025-11-20 22:03:27,608 - __main__ - INFO -     URL: https://www.immobilienscout24.de/expose/159173977...
+2025-11-20 22:03:27,608 - __main__ - INFO -   Listing 2: Hochwertige neue 2-Zimmer Dachgeschosswohnung mit Terrasse &...
+2025-11-20 22:03:27,608 - __main__ - INFO -     Price: 
+2025-11-20 22:03:27,608 - __main__ - INFO -     URL: https://www.immobilienscout24.de/expose/161168703...
+2025-11-20 22:03:27,608 - __main__ - INFO -   Listing 3: 3 passende Wohneinheiten: HOCHWERTIGE NEUBAU-MIETWOHNUNGEN!...
+2025-11-20 22:03:27,608 - __main__ - INFO -     Price: 
+2025-11-20 22:03:27,608 - __main__ - INFO -     URL: https://www.immobilienscout24.de/expose/162240503...
+2025-11-20 22:03:27,608 - __main__ - INFO -   ... and 17 more listings
+2025-11-20 22:03:27,608 - __main__ - INFO - ==================================================
+2025-11-20 22:03:27,608 - __main__ - INFO - Testing WG-Gesucht provider...
+2025-11-20 22:03:27,608 - __main__ - INFO - Provider initialized with URL: https://www.wg-gesucht.de/wg-gesucht/muenchen.html
+2025-11-20 22:03:27,608 - mwa_core.providers.wg_gesucht - INFO - WG-Gesucht scraping attempt 1/2
+2025-11-20 22:03:27,608 - mafa.driver - INFO - Initializing Chrome driver...
+2025-11-20 22:03:27,608 - WDM - INFO - ====== WebDriver manager ======
+2025-11-20 22:03:27,885 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:03:27,885 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:03:27,885 - WDM - INFO - There is no [mac64] chromedriver "142.0.7444.176" for browser google-chrome "142.0.7444.176" in cache
+2025-11-20 22:03:27,885 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:03:27,978 - WDM - INFO - WebDriver version 142.0.7444.175 selected
+2025-11-20 22:03:27,991 - WDM - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 22:03:27,992 - WDM - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/142.0.7444.175/mac-arm64/chromedriver-mac-arm64.zip
+2025-11-20 22:03:28,053 - WDM - INFO - Driver downloading response is 200
+2025-11-20 22:03:29,381 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-11-20 22:03:29,454 - WDM - INFO - Driver has been saved in cache [/Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176]
+2025-11-20 22:03:29,456 - mafa.driver - INFO - WebDriver Manager returned path: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64/THIRD_PARTY_NOTICES.chromedriver
+2025-11-20 22:03:29,456 - mafa.driver - INFO - Path type: file
+2025-11-20 22:03:29,456 - mafa.driver - INFO - Searching for actual ChromeDriver binary in: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64
+2025-11-20 22:03:29,456 - mafa.driver - INFO - Found actual ChromeDriver binary at: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64/chromedriver
+2025-11-20 22:03:29,456 - mafa.driver - INFO - Found chromedriver at: /Users/dinz/.wdm/drivers/chromedriver/mac64/142.0.7444.176/chromedriver-mac-arm64/chromedriver
+2025-11-20 22:03:30,159 - mafa.driver - INFO - Chrome driver initialized successfully
+2025-11-20 22:07:31,894 - mwa_core.providers.wg_gesucht - WARNING - No listing elements found on the page
+2025-11-20 22:07:31,993 - __main__ - INFO - ✅ WG-Gesucht scraping completed: 0 listings found
+2025-11-20 22:07:31,993 - __main__ - INFO - ==================================================
+2025-11-20 22:07:31,993 - __main__ - INFO - TEST SUMMARY
+2025-11-20 22:07:31,993 - __main__ - INFO - ==================================================
+2025-11-20 22:07:31,993 - __main__ - INFO - Configuration Loading: ✅ PASSED
+2025-11-20 22:07:31,993 - __main__ - INFO - Basic Chrome Driver: ✅ PASSED
+2025-11-20 22:07:31,993 - __main__ - INFO - ImmoScout24 Provider: ✅ PASSED
+2025-11-20 22:07:31,993 - __main__ - INFO - WG-Gesucht Provider: ❌ FAILED
+2025-11-20 22:07:31,993 - __main__ - INFO - ==================================================
+2025-11-20 22:07:31,993 - __main__ - INFO - Total: 4 tests | Passed: 3 | Failed: 1
+2025-11-20 22:07:31,993 - __main__ - ERROR - ⚠️  1 test(s) failed. Check the logs for details.

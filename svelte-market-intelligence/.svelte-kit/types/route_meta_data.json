@@ -1,0 +1,21 @@
+{
+	"/": [
+		"src/routes/+page.js"
+	],
+	"/analytics": [
+		"src/routes/analytics/+page.js"
+	],
+	"/contacts": [
+		"src/routes/contacts/+page.js"
+	],
+	"/contacts/[id]": [
+		"src/routes/contacts/[id]/+page.js"
+	],
+	"/search": [
+		"src/routes/search/+page.js"
+	],
+	"/search/new": [
+		"src/routes/search/new/+page.js"
+	],
+	"/test": []
+}
