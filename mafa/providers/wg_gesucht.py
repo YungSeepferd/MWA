@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import List, Dict
 import time
@@ -11,8 +12,10 @@ from ..exceptions import ProviderError, ScrapingError
 from ..config.settings import Settings
 from ..security import SecurityValidator
 
+logger = logging.getLogger(__name__)
 
-class WGGesuchtProvider:
+
+class WGGesuchtProvider(BaseProvider):
     """Provider for WG‑Gesucht."""
 
     URL = "https://www.wg-gesucht.de/wg-gesucht/muenchen.html"
@@ -29,29 +32,29 @@ class WGGesuchtProvider:
         
         for attempt in range(self.max_retries):
             try:
-                print(f"Attempt {attempt + 1}/{self.max_retries} - Starting WG-Gesucht scraping...")
+                logger.info(f"Attempt {attempt + 1}/{self.max_retries} - Starting WG-Gesucht scraping...")
                 with SeleniumDriver() as driver:
-                    print("SeleniumDriver created successfully")
+                    logger.debug("SeleniumDriver created successfully")
                     driver.set_page_load_timeout(30)
-                    print(f"Navigating to: {self.URL}")
+                    logger.debug(f"Navigating to: {self.URL}")
                     driver.get(self.URL)
-                    print("Page loaded successfully")
+                    logger.debug("Page loaded successfully")
                     
                     # Add random delay to avoid detection
                     time.sleep(random.uniform(2, 5))
-                    print("Random delay completed")
+                    logger.debug("Random delay completed")
                     
                     # Wait for JavaScript to render content
-                    print("Waiting for JavaScript to render listings...")
+                    logger.debug("Waiting for JavaScript to render listings...")
                     time.sleep(3)  # Wait for dynamic content to load
                     
                     # Try to find listing elements
                     try:
-                        print("Trying primary selector: listing")
+                        logger.debug("Trying primary selector: listing")
                         items = driver.find_elements(By.CLASS_NAME, "listing")
-                        print(f"Found {len(items)} items with primary selector")
+                        logger.debug(f"Found {len(items)} items with primary selector")
                     except Exception as e:
-                        print(f"Error with primary selector: {e}")
+                        logger.debug(f"Error with primary selector: {e}")
                         items = []
                     
                     if not items:
@@ -66,27 +69,27 @@ class WGGesuchtProvider:
                             try:
                                 items = driver.find_elements(By.CSS_SELECTOR, selector)
                                 if items:
-                                    print(f"Found {len(items)} items with alternative selector: {selector}")
+                                    logger.debug(f"Found {len(items)} items with alternative selector: {selector}")
                                     break
                                 else:
-                                    print(f"No items found with alternative selector: {selector}")
+                                    logger.debug(f"No items found with alternative selector: {selector}")
                             except Exception as e:
-                                print(f"Error with alternative selector {selector}: {e}")
+                                logger.debug(f"Error with alternative selector {selector}: {e}")
                                 continue
                         
                         if not items:
-                            print("No listings found with any selector - checking page content")
+                            logger.warning("No listings found with any selector - checking page content")
                             page_source = driver.page_source[:500]  # Get first 500 chars for debugging
-                            print(f"Page content preview: {page_source}")
+                            logger.debug(f"Page content preview: {page_source}")
                             
                             # Save full page source for analysis
                             with open("/tmp/wg_gesucht_page_source.html", "w", encoding="utf-8") as f:
                                 f.write(driver.page_source)
-                            print("Full page source saved to /tmp/wg_gesucht_page_source.html")
+                            logger.debug("Full page source saved to /tmp/wg_gesucht_page_source.html")
                             
                             # Check if there's a captcha or blocking message
                             if "captcha" in driver.page_source.lower() or "robot" in driver.page_source.lower():
-                                print("Detected possible bot blocking or captcha")
+                                logger.warning("Detected possible bot blocking or captcha")
                             
                             raise ScrapingError("No listings found with any selector")
                     
@@ -142,7 +145,7 @@ class WGGesuchtProvider:
                             continue
                         except Exception as e:
                             # Log error but continue processing other items
-                            print(f"Error parsing WG-Gesucht listing item: {e}")
+                            logger.warning(f"Error parsing WG-Gesucht listing item: {e}")
                             continue
                 
                 # Success - break out of retry loop

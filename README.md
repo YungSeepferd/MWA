@@ -745,6 +745,55 @@ Roo can help optimize performance:
 /generate-roadmap --focus=performance
 ```
 
+## 🚀 Selenium Scraping Primer
+
+MAFA uses Selenium with Chrome for web scraping real estate listings. Here's a quick primer on the scraping architecture:
+
+### SeleniumDriver Class
+The [`mafa/driver.py`](mafa/driver.py) provides a robust Selenium wrapper with:
+
+```python
+from mafa.driver import SeleniumDriver
+
+# Basic usage
+with SeleniumDriver(headless=True, timeout=30) as driver:
+    driver.get("https://example.com")
+    
+    # Use WebDriverWait helper methods
+    element = driver.wait_for_element(By.CSS_SELECTOR, ".listing", timeout=10)
+    elements = driver.wait_for_elements(By.CLASS_NAME, "result-item", timeout=5)
+    clickable_element = driver.wait_for_element_clickable(By.ID, "submit-btn", timeout=3)
+```
+
+### WebDriverWait Helper Methods
+- **`wait_for_element()`** - Wait for single element with timeout
+- **`wait_for_elements()`** - Wait for multiple elements (returns empty list on timeout)
+- **`wait_for_element_clickable()`** - Wait for element to be clickable
+
+### Provider Architecture
+Providers inherit from `BaseProvider` protocol and implement the `scrape()` method:
+
+```python
+from mafa.providers.base import BaseProvider
+
+class MyProvider(BaseProvider):
+    def scrape(self) -> List[Dict]:
+        # Implementation using SeleniumDriver
+        pass
+```
+
+### Best Practices
+1. **Use WebDriverWait** instead of direct `find_elements()` calls
+2. **Implement retry logic** with exponential backoff
+3. **Use proper logging** instead of print statements
+4. **Handle timeouts gracefully** with appropriate error messages
+5. **Validate extracted data** before returning listings
+
+### Error Handling
+- `SeleniumDriverError` for driver-related issues
+- `TimeoutException` for element wait timeouts
+- `ProviderError` for provider-specific failures
+
 ---
 
 **Note**: This project is designed for educational purposes and personal use. Please respect the terms of service of the real estate websites you scrape and use rate limiting appropriately.

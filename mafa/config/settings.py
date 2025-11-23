@@ -135,7 +135,28 @@ class Settings(BaseSettings):
         when the target file does not exist.
         """
         if path is None:
-            path = cls().config_path
+            # Create a minimal instance just to get the config_path
+            # Use default values for required fields to avoid validation errors
+            minimal_data = {
+                "personal_profile": {
+                    "my_full_name": "Test User",
+                    "my_profession": "Test",
+                    "my_employer": "Test",
+                    "net_household_income_monthly": 1000,
+                    "total_occupants": 1,
+                    "intro_paragraph": "Test"
+                },
+                "search_criteria": {
+                    "max_price": 1000,
+                    "min_rooms": 1,
+                    "zip_codes": ["00000"]
+                },
+                "notification": {
+                    "provider": "discord",
+                    "discord_webhook_url": "https://example.com"
+                }
+            }
+            path = cls.parse_obj(minimal_data).config_path
 
         if not path.exists():
             # Fallback to the example file shipped with the repository

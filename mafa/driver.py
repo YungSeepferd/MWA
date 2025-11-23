@@ -14,10 +14,14 @@ import os
 import time
 from contextlib import AbstractContextManager
 from pathlib import Path
-from typing import Generator
+from typing import Generator, List
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
 
 logger = logging.getLogger(__name__)
@@ -247,3 +251,127 @@ class SeleniumDriver(AbstractContextManager):
         
         # Don't suppress exceptions that occurred inside the context
         return False
+
+    def wait_for_element(self, by: By, selector: str, timeout: int = 10) -> webdriver.remote.webelement.WebElement:
+        """
+        Wait for a single element to be present with timeout support.
+        
+        Parameters
+        ----------
+        by : By
+            Locator strategy (e.g., By.CSS_SELECTOR, By.CLASS_NAME)
+        selector : str
+            Element selector string
+        timeout : int, optional
+            Maximum wait time in seconds (default: 10)
+        
+        Returns
+        -------
+        WebElement
+            The located web element
+        
+        Raises
+        ------
+        TimeoutException
+            If element is not found within timeout
+        SeleniumDriverError
+            If driver is not initialized
+        """
+        if self._driver is None:
+            raise SeleniumDriverError("Driver not initialized. Use within context manager.")
+        
+        try:
+            logger.debug(f"Waiting for element: {by}='{selector}' (timeout: {timeout}s)")
+            element = WebDriverWait(self._driver, timeout).until(
+                EC.presence_of_element_located((by, selector))
+            )
+            logger.debug(f"Element found: {by}='{selector}'")
+            return element
+        except TimeoutException as e:
+            logger.warning(f"Timeout waiting for element: {by}='{selector}' after {timeout}s")
+            raise
+        except Exception as e:
+            logger.error(f"Error waiting for element {by}='{selector}': {e}")
+            raise SeleniumDriverError(f"Element wait failed: {e}")
+
+    def wait_for_elements(self, by: By, selector: str, timeout: int = 10) -> List[webdriver.remote.webelement.WebElement]:
+        """
+        Wait for multiple elements to be present with timeout support.
+        
+        Parameters
+        ----------
+        by : By
+            Locator strategy (e.g., By.CSS_SELECTOR, By.CLASS_NAME)
+        selector : str
+            Element selector string
+        timeout : int, optional
+            Maximum wait time in seconds (default: 10)
+        
+        Returns
+        -------
+        List[WebElement]
+            List of located web elements (empty list if none found)
+        
+        Raises
+        ------
+        SeleniumDriverError
+            If driver is not initialized
+        """
+        if self._driver is None:
+            raise SeleniumDriverError("Driver not initialized. Use within context manager.")
+        
+        try:
+            logger.debug(f"Waiting for elements: {by}='{selector}' (timeout: {timeout}s)")
+            elements = WebDriverWait(self._driver, timeout).until(
+                EC.presence_of_all_elements_located((by, selector))
+            )
+            logger.debug(f"Found {len(elements)} elements: {by}='{selector}'")
+            return elements
+        except TimeoutException:
+            logger.warning(f"Timeout waiting for elements: {by}='{selector}' after {timeout}s - returning empty list")
+            return []
+        except Exception as e:
+            logger.error(f"Error waiting for elements {by}='{selector}': {e}")
+            raise SeleniumDriverError(f"Elements wait failed: {e}")
+
+    def wait_for_element_clickable(self, by: By, selector: str, timeout: int = 10) -> webdriver.remote.webelement.WebElement:
+        """
+        Wait for an element to be clickable with timeout support.
+        
+        Parameters
+        ----------
+        by : By
+            Locator strategy (e.g., By.CSS_SELECTOR, By.CLASS_NAME)
+        selector : str
+            Element selector string
+        timeout : int, optional
+            Maximum wait time in seconds (default: 10)
+        
+        Returns
+        -------
+        WebElement
+            The clickable web element
+        
+        Raises
+        ------
+        TimeoutException
+            If element is not clickable within timeout
+        SeleniumDriverError
+            If driver is not initialized
+        """
+        if self._driver is None:
+            raise SeleniumDriverError("Driver not initialized. Use within context manager.")
+        
+        try:
+            logger.debug(f"Waiting for clickable element: {by}='{selector}' (timeout: {timeout}s)")
+            element = WebDriverWait(self._driver, timeout).until(
+                EC.element_to_be_clickable((by, selector))
+            )
+            logger.debug(f"Element clickable: {by}='{selector}'")
+            return element
+        except TimeoutException as e:
+            logger.warning(f"Timeout waiting for clickable element: {by}='{selector}' after {timeout}s")
+            raise
+        except Exception as e:
+            logger.error(f"Error waiting for clickable element {by}='{selector}': {e}")
+            raise SeleniumDriverError(f"Clickable element wait failed: {e}")
