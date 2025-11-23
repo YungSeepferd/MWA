@@ -19,6 +19,9 @@ class MigrationAnalyzer {
       dependencies: [],
       metrics: {}
     };
+    
+    // Security: Initialize HTML escaping function
+    this.escapeHtml = this.createEscapeHtmlFunction();
   }
 
   /**
@@ -402,7 +405,28 @@ class MigrationAnalyzer {
     const complexityScores = { low: 1, medium: 3, high: 5 };
     return complexityScores[feature.complexity] * usage;
   }
-}
+  }
+
+  /**
+   * Create HTML escaping function to prevent XSS
+   */
+  createEscapeHtmlFunction() {
+    const map = {
+      '&': '&',
+      '<': '<',
+      '>': '>',
+      '"': '"',
+      "'": '&#x27;',
+      '/': '&#x2F;'
+    };
+    
+    return function(text) {
+      if (typeof text !== 'string') {
+        return text;
+      }
+      return text.replace(/[&<>"'/]/g, (char) => map[char]);
+    };
+  }
 
 // Export for use in other scripts
 module.exports = MigrationAnalyzer;

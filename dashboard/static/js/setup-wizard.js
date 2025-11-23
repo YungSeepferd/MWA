@@ -321,21 +321,28 @@ class SetupWizard {
         const notifications = this.configuration.notifications;
         const providers = this.configuration.providers;
 
+        // Sanitize all user input to prevent XSS
+        const minRent = this.escapeHtml(search.minRent || 'Any');
+        const maxRent = this.escapeHtml(search.maxRent || 'Any');
+        const minSize = this.escapeHtml(search.minSize || 'Any');
+        const location = this.escapeHtml(search.location || 'Any area');
+        const emailAddress = this.escapeHtml(notifications.emailAddress || 'Not provided');
+
         return `
             <div class="row">
                 <div class="col-md-6 mb-4">
                     <h5><i class="fas fa-search me-2"></i>Search Preferences</h5>
                     <ul class="list-unstyled">
-                        <li><strong>Rent Range:</strong> €${search.minRent || 'Any'} - €${search.maxRent || 'Any'}</li>
-                        <li><strong>Min Size:</strong> ${search.minSize || 'Any'}m²</li>
-                        <li><strong>Location:</strong> ${search.location || 'Any area'}</li>
+                        <li><strong>Rent Range:</strong> €${minRent} - €${maxRent}</li>
+                        <li><strong>Min Size:</strong> ${minSize}m²</li>
+                        <li><strong>Location:</strong> ${location}</li>
                     </ul>
                 </div>
                 <div class="col-md-6 mb-4">
                     <h5><i class="fas fa-bell me-2"></i>Notifications</h5>
                     <ul class="list-unstyled">
                         <li><strong>Email:</strong> ${notifications.emailNotifications ? 'Enabled' : 'Disabled'}</li>
-                        ${notifications.emailNotifications ? `<li><strong>Address:</strong> ${notifications.emailAddress || 'Not provided'}</li>` : ''}
+                        ${notifications.emailNotifications ? `<li><strong>Address:</strong> ${emailAddress}</li>` : ''}
                         <li><strong>Discord:</strong> ${notifications.discordNotifications ? 'Enabled' : 'Disabled'}</li>
                         <li><strong>Telegram:</strong> ${notifications.telegramNotifications ? 'Enabled' : 'Disabled'}</li>
                     </ul>
@@ -542,11 +549,14 @@ class SetupWizard {
         const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
         const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
         
+        // Sanitize message to prevent XSS
+        const sanitizedMessage = this.escapeHtml(message);
+        
         const notification = document.createElement('div');
         notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
         notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
         notification.innerHTML = `
-            <i class="fas ${icon} me-2"></i>${message}
+            <i class="fas ${icon} me-2"></i>${sanitizedMessage}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         
@@ -558,6 +568,25 @@ class SetupWizard {
                 notification.remove();
             }
         }, 5000);
+    }
+    /**
+     * Escape HTML special characters to prevent XSS attacks
+     */
+    escapeHtml(text) {
+        if (typeof text !== 'string') {
+            return text;
+        }
+        
+        const map = {
+            '&': '&',
+            '<': '<',
+            '>': '>',
+            '"': '"',
+            "'": '&#x27;',
+            '/': '&#x2F;'
+        };
+        
+        return text.replace(/[&<>"'/]/g, (char) => map[char]);
     }
 }
 

@@ -398,19 +398,24 @@ class RealtimeDashboard {
     updateCurrentJobDisplay(jobData) {
         const jobElement = document.getElementById('current-scraper-job');
         if (jobElement) {
+            // Sanitize user input to prevent XSS
+            const provider = this.escapeHtml(jobData.provider || 'Unknown');
+            const status = this.escapeHtml(jobData.status || 'Unknown status');
+            const progress = jobData.progress ? this.escapeHtml(jobData.progress.toString()) : null;
+            
             jobElement.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <strong>${jobData.provider || 'Unknown'}</strong>
+                        <strong>${provider}</strong>
                         <br>
-                        <small class="text-muted">${jobData.status || 'Unknown status'}</small>
+                        <small class="text-muted">${status}</small>
                     </div>
                     <div class="text-end">
-                        ${jobData.progress ? `
+                        ${progress ? `
                             <div class="progress" style="width: 100px; height: 6px;">
-                                <div class="progress-bar" style="width: ${jobData.progress}%"></div>
+                                <div class="progress-bar" style="width: ${progress}%"></div>
                             </div>
-                            <small class="text-muted">${jobData.progress}%</small>
+                            <small class="text-muted">${progress}%</small>
                         ` : ''}
                     </div>
                 </div>
@@ -421,14 +426,19 @@ class RealtimeDashboard {
     updateTopSources(sources) {
         const topSourcesList = document.getElementById('top-sources-list');
         if (topSourcesList) {
-            topSourcesList.innerHTML = sources.slice(0, 5).map(source => `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-truncate" style="max-width: 200px;" title="${source.source}">
-                        ${source.source}
-                    </span>
-                    <span class="badge bg-primary">${source.count}</span>
-                </div>
-            `).join('');
+            topSourcesList.innerHTML = sources.slice(0, 5).map(source => {
+                // Sanitize user input to prevent XSS
+                const sourceName = this.escapeHtml(source.source);
+                const count = this.escapeHtml(source.count.toString());
+                return `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-truncate" style="max-width: 200px;" title="${sourceName}">
+                            ${sourceName}
+                        </span>
+                        <span class="badge bg-primary">${count}</span>
+                    </div>
+                `;
+            }).join('');
         }
     }
     
@@ -465,8 +475,11 @@ class RealtimeDashboard {
         notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
         notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
         
+        // Sanitize message to prevent XSS
+        const sanitizedMessage = this.escapeHtml(message);
+        
         notification.innerHTML = `
-            ${message}
+            ${sanitizedMessage}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         
@@ -511,39 +524,49 @@ class RealtimeDashboard {
     updateRecentContactsDisplay(contacts) {
         const recentContactsBody = document.getElementById('recent-contacts-body');
         if (recentContactsBody) {
-            recentContactsBody.innerHTML = contacts.map(contact => `
-                <tr>
-                    <td>
-                        <span class="text-truncate" style="max-width: 200px;" title="${contact.source}">
-                            ${contact.source}
-                        </span>
-                    </td>
-                    <td>
-                        <i class="fas fa-${contact.method === 'email' ? 'envelope' : contact.method === 'phone' ? 'phone' : 'file-alt'}"></i>
-                        ${contact.method}
-                    </td>
-                    <td>
-                        <span class="text-truncate" style="max-width: 200px;" title="${contact.value}">
-                            ${contact.value}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge bg-${contact.confidence === 'high' ? 'success' : contact.confidence === 'medium' ? 'warning' : 'danger'}">
-                            ${contact.confidence}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge bg-${contact.status === 'approved' ? 'success' : contact.status === 'rejected' ? 'danger' : 'warning'}">
-                            ${contact.status}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewContactDetails(${contact.id})">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+            recentContactsBody.innerHTML = contacts.map(contact => {
+                // Sanitize all user input to prevent XSS
+                const source = this.escapeHtml(contact.source);
+                const method = this.escapeHtml(contact.method);
+                const value = this.escapeHtml(contact.value);
+                const confidence = this.escapeHtml(contact.confidence);
+                const status = this.escapeHtml(contact.status);
+                const id = this.escapeHtml(contact.id.toString());
+                
+                return `
+                    <tr>
+                        <td>
+                            <span class="text-truncate" style="max-width: 200px;" title="${source}">
+                                ${source}
+                            </span>
+                        </td>
+                        <td>
+                            <i class="fas fa-${contact.method === 'email' ? 'envelope' : contact.method === 'phone' ? 'phone' : 'file-alt'}"></i>
+                            ${method}
+                        </td>
+                        <td>
+                            <span class="text-truncate" style="max-width: 200px;" title="${value}">
+                                ${value}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-${contact.confidence === 'high' ? 'success' : contact.confidence === 'medium' ? 'warning' : 'danger'}">
+                                ${confidence}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-${contact.status === 'approved' ? 'success' : contact.status === 'rejected' ? 'danger' : 'warning'}">
+                                ${status}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewContactDetails(${id})">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
     }
     
@@ -577,6 +600,26 @@ class RealtimeDashboard {
         this.loadRecentContacts();
         
         this.showNotification('Manual update requested', 'success');
+    }
+
+    /**
+     * Escape HTML special characters to prevent XSS attacks
+     */
+    escapeHtml(text) {
+        if (typeof text !== 'string') {
+            return text;
+        }
+        
+        const map = {
+            '&': '&',
+            '<': '<',
+            '>': '>',
+            '"': '"',
+            "'": '&#x27;',
+            '/': '&#x2F;'
+        };
+        
+        return text.replace(/[&<>"'/]/g, (char) => map[char]);
     }
 }
 
@@ -723,12 +766,15 @@ function addWebSocketStatusIndicator() {
     if (nav) {
         const statusLi = document.createElement('li');
         statusLi.className = 'nav-item me-3';
-        statusLi.innerHTML = `
-            <span class="navbar-text">
-                <i class="fas fa-wifi"></i>
-                <span id="websocket-status" class="badge bg-secondary">Disconnected</span>
-            </span>
+        
+        // Use textContent instead of innerHTML for static content
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'navbar-text';
+        statusSpan.innerHTML = `
+            <i class="fas fa-wifi"></i>
+            <span id="websocket-status" class="badge bg-secondary">Disconnected</span>
         `;
+        statusLi.appendChild(statusSpan);
         nav.insertBefore(statusLi, nav.firstChild);
     }
 }

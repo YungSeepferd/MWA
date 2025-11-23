@@ -346,21 +346,28 @@
                 }
             };
 
+            // Sanitize all user input to prevent XSS
+            const minRent = this.escapeHtml(configuration.search.minRent);
+            const maxRent = this.escapeHtml(configuration.search.maxRent);
+            const minSize = this.escapeHtml(configuration.search.minSize);
+            const location = this.escapeHtml(configuration.search.location);
+            const emailAddress = this.escapeHtml(configuration.notifications.emailAddress);
+
             reviewElement.innerHTML = `
                 <div class="row">
                     <div class="col-md-6 mb-4">
                         <h5><i class="fas fa-search me-2"></i>Search Preferences</h5>
                         <ul class="list-unstyled">
-                            <li><strong>Rent Range:</strong> €${configuration.search.minRent} - €${configuration.search.maxRent}</li>
-                            <li><strong>Min Size:</strong> ${configuration.search.minSize}m²</li>
-                            <li><strong>Location:</strong> ${configuration.search.location}</li>
+                            <li><strong>Rent Range:</strong> €${minRent} - €${maxRent}</li>
+                            <li><strong>Min Size:</strong> ${minSize}m²</li>
+                            <li><strong>Location:</strong> ${location}</li>
                         </ul>
                     </div>
                     <div class="col-md-6 mb-4">
                         <h5><i class="fas fa-bell me-2"></i>Notifications</h5>
                         <ul class="list-unstyled">
                             <li><strong>Email:</strong> ${configuration.notifications.email ? 'Enabled' : 'Disabled'}</li>
-                            ${configuration.notifications.email ? `<li><strong>Address:</strong> ${configuration.notifications.emailAddress}</li>` : ''}
+                            ${configuration.notifications.email ? `<li><strong>Address:</strong> ${emailAddress}</li>` : ''}
                             <li><strong>Discord:</strong> ${configuration.notifications.discord ? 'Enabled' : 'Disabled'}</li>
                             <li><strong>Telegram:</strong> ${configuration.notifications.telegram ? 'Enabled' : 'Disabled'}</li>
                         </ul>
@@ -376,6 +383,26 @@
                     </div>
                 </div>
             `;
+        }
+
+        /**
+         * Escape HTML special characters to prevent XSS attacks
+         */
+        function escapeHtml(text) {
+            if (typeof text !== 'string') {
+                return text;
+            }
+            
+            const map = {
+                '&': '&',
+                '<': '<',
+                '>': '>',
+                '"': '"',
+                "'": '&#x27;',
+                '/': '&#x2F;'
+            };
+            
+            return text.replace(/[&<>"'/]/g, (char) => map[char]);
         }
 
         async function completeSetup() {
