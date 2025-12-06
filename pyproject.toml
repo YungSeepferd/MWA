@@ -33,7 +33,7 @@ aiofiles = "^25.1.0"
 pymupdf = "^1.26.6"
 python-jose = {extras = ["cryptography"], version = "^3.5.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
-python-multipart = "^0.0.6"
+python-multipart = "^0.0.18"
 webdriver-manager = "^4.0.2"
 
 [tool.poetry.group.dev.dependencies]
